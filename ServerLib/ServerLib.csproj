@@ -40,6 +40,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Class1.cs" />
+    <Compile Include="Transactions\Coordinator.cs" />
+    <Compile Include="Transactions\IParticipant.cs" />
+    <Compile Include="Transactions\ParticipantProxy.cs" />
+    <Compile Include="Transactions\TxException.cs" />
+    <Compile Include="Transactions\ICoordinator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
