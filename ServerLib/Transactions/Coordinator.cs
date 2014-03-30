@@ -5,15 +5,16 @@ namespace ServerLib.Transactions
 {
     public class Coordinator : ICoordinator
     {
-        private Dictionary<string, List<ParticipantProxy>> transactions = new Dictionary<string, List<ParticipantProxy>>();
+        int currentTxid = 0;
+        private Dictionary<int, List<ParticipantProxy>> transactions = new Dictionary<int, List<ParticipantProxy>>();
 
         /**
          * Creates a new random global transaction id
          */
 
-        public string StartTransaction()
+        public int StartTransaction()
         {
-            string txid = Guid.NewGuid().ToString();
+            int txid = currentTxid++;
 
             transactions.Add(txid, new List<ParticipantProxy>());
 
@@ -25,7 +26,7 @@ namespace ServerLib.Transactions
          * Adds participant to distributed transaction
          */
 
-        public void JoinTransaction(string txid, string endpoint)
+        public void JoinTransaction(int txid, string endpoint)
         {
             List<ParticipantProxy> participants;
 
@@ -44,7 +45,7 @@ namespace ServerLib.Transactions
          * Check if participant is ready to commit.
          */
 
-        private void PrepareTransaction(string txid)
+        private void PrepareTransaction(int txid)
         {
             List<ParticipantProxy> participants;
 
@@ -75,7 +76,7 @@ namespace ServerLib.Transactions
          * commit.
          */
 
-        private bool IsReadyToCommit(string txid)
+        private bool IsReadyToCommit(int txid)
         {
             bool result = true;
             List<ParticipantProxy> participants;
@@ -94,7 +95,7 @@ namespace ServerLib.Transactions
          * Commits if all participants are ready to commit. Otherwise aborts.
          */
 
-        public void CommitTransaction(string txid)
+        public void CommitTransaction(int txid)
         {
             PrepareTransaction(txid);
 
@@ -137,7 +138,7 @@ namespace ServerLib.Transactions
             }
         }
 
-        public void AbortTransaction(string txid)
+        public void AbortTransaction(int txid)
         {
             List<ParticipantProxy> participants;
 
@@ -156,7 +157,7 @@ namespace ServerLib.Transactions
             }
         }
 
-        private bool AbortTransactionForParticipant(string txid, ParticipantProxy participant)
+        private bool AbortTransactionForParticipant(int txid, ParticipantProxy participant)
         {
             IParticipant proxy = participant.GetProxy();
 

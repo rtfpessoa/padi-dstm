@@ -2,14 +2,14 @@
 {
     internal interface ICoordinator
     {
-        string StartTransaction();
+        int StartTransaction();
 
-        void JoinTransaction(string txid, string endpoint);
-
-        /// <exception cref="TxException"></exception>
-        void CommitTransaction(string txid);
+        void JoinTransaction(int txid, string endpoint);
 
         /// <exception cref="TxException"></exception>
-        void AbortTransaction(string txid);
+        void CommitTransaction(int txid);
+
+        /// <exception cref="TxException"></exception>
+        void AbortTransaction(int txid);
     }
 }

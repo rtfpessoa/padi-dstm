@@ -3,12 +3,12 @@
     internal interface IParticipant
     {
         /// <exception cref="TxException"></exception>
-        void PrepareTransaction(string txid);
+        void PrepareTransaction(int txid);
 
         /// <exception cref="TxException"></exception>
-        void CommitTransaction(string txid);
+        void CommitTransaction(int txid);
 
         /// <exception cref="TxException"></exception>
-        void AbortTransaction(string txid);
+        void AbortTransaction(int txid);
     }
 }
