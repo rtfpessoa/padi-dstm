@@ -6,32 +6,22 @@ using System.Threading.Tasks;
 
 namespace ServerLib.Storage
 {
-    public class Storage : IStorage
+    public class KeyValueStorage : IStorage
     {
-        private Dictionary<int, List<int>> transactionReadSet = new Dictionary<int, List<int>>();
-        private Dictionary<int, List<int>> transactionWriteSet = new Dictionary<int, List<int>>();
-        private Dictionary<int, List<KeyValuePair<int, int>>> transactionPadInt = new Dictionary<int, List<KeyValuePair<int, int>>>();
-        private Dictionary<int, int> padInts = new Dictionary<int, int>();
+        private Dictionary<int, int> keyStore = new Dictionary<int, int>();
 
-        public int ReadPadInt(int transaction, int uuid) {
-            int value;
-            
-            if (!padInts.TryGetValue(uuid, out value))
-            {
-                value = 0;
-            }
+        public int ReadValue(int key)
+        {
+            int value = 0;
+
+            keyStore.TryGetValue(key, out value);
 
             return value;
         }
 
-        public void WritePadInt(int transaction, int uuid, int value) {
-            padInts[uuid] = value;
+        public void WriteValue(int key, int value)
+        {
+            keyStore[key] = value;
         }
-
-        public Boolean PrepareTransaction(int transaction) { return true; }
-
-        public Boolean CommitTransaction(int transaction) { return true; }
-
-        public Boolean AbortTransaction(int transaction) { return true; }
     }
 }

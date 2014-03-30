@@ -6,16 +6,10 @@ using System.Threading.Tasks;
 
 namespace ServerLib.Storage
 {
-    interface IStorage
+    internal interface IStorage
     {
-        int ReadPadInt(int transaction, int uuid);
+        int ReadValue(int key);
 
-        void WritePadInt(int transaction, int uuid, int value);
-
-        Boolean PrepareTransaction(int transaction);
-
-        Boolean CommitTransaction(int transaction);
-
-        Boolean AbortTransaction(int transaction);
+        void WriteValue(int key, int value);
     }
 }
