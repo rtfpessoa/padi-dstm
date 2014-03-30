@@ -41,7 +41,7 @@ namespace ServerLib.Transactions
         }
 
         /**
-         * Request node vote.
+         * Check if participant is ready to commit.
          */
 
         private void PrepareTransaction(string txid)
@@ -126,35 +126,54 @@ namespace ServerLib.Transactions
 
                     Console.WriteLine("{0} failed to commit transaction {0}", participant.endpoint, txid);
                     Console.WriteLine(ex.ToString());
+
+                    break;
                 }
+            }
+
+            if (!result)
+            {
+                AbortTransaction(txid);
             }
         }
 
         public void AbortTransaction(string txid)
         {
-            bool result = true;
             List<ParticipantProxy> participants;
 
             transactions.TryGetValue(txid, out participants);
 
-            foreach (ParticipantProxy participant in participants)
+            Queue<ParticipantProxy> pending = new Queue<ParticipantProxy>(participants);
+
+            while (pending.Count > 0)
             {
-                IParticipant proxy = participant.GetProxy();
+                ParticipantProxy proxy = pending.Dequeue();
 
-                try
+                if (!AbortTransactionForParticipant(txid, proxy))
                 {
-                    proxy.AbortTransaction(txid);
-                    result = true;
-
-                    Console.WriteLine("{0} aborted transaction {0}", participant.endpoint, txid);
+                    pending.Enqueue(proxy);
                 }
-                catch (TxException ex)
-                {
-                    result = false;
+            }
+        }
 
-                    Console.WriteLine("{0} failed to abort transaction {0}", participant.endpoint, txid);
-                    Console.WriteLine(ex.ToString());
-                }
+        private bool AbortTransactionForParticipant(string txid, ParticipantProxy participant)
+        {
+            IParticipant proxy = participant.GetProxy();
+
+            try
+            {
+                proxy.AbortTransaction(txid);
+
+                Console.WriteLine("{0} aborted transaction {0}", participant.endpoint, txid);
+
+                return true;
+            }
+            catch (TxException ex)
+            {
+                Console.WriteLine("{0} failed to abort transaction {0}", participant.endpoint, txid);
+                Console.WriteLine(ex.ToString());
+
+                return false;
             }
         }
     }
