@@ -44,6 +44,7 @@
     <Compile Include="Storage\Storage.cs" />
     <Compile Include="Transactions\Coordinator.cs" />
     <Compile Include="Transactions\IParticipant.cs" />
+    <Compile Include="Transactions\Participant.cs" />
     <Compile Include="Transactions\ParticipantProxy.cs" />
     <Compile Include="Transactions\TxException.cs" />
     <Compile Include="Transactions\ICoordinator.cs" />
