@@ -86,6 +86,9 @@ namespace ServerLib.Transactions
             }
         }
 
+        /*
+         * Checks if a transaction is read-only, didn't change any PadInts
+         */
         private Boolean isReadOnlyTx(int txid)
         {
             List<int> writes;
@@ -97,6 +100,10 @@ namespace ServerLib.Transactions
             return writes.Count == 0;
         }
 
+        /*
+         * Checks if there are any changed PadInts between the transaction reads
+         *  and all the overlaping transactions writes that already commited
+         */
         private List<int> readOtherWrites(int txid)
         {
             int startTxid, endTxid = biggestCommitedTxid;
@@ -121,6 +128,10 @@ namespace ServerLib.Transactions
             return conflicts;
         }
 
+        /*
+         * Checks if there are any changed PadInts between the transaction writes
+         *  and all the overlaping transactions reads that still active
+         */
         private List<int> writeOtherReads(int txid)
         {
             List<int> writes;
