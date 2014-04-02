@@ -1,4 +1,5 @@
-﻿using ServerLib.Storage;
+﻿using CommonTypes;
+using ServerLib.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,8 @@ namespace ServerLib.Transactions
 {
     public abstract class Participant : IParticipant
     {
+        private IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
+
         private IStorage storage;
 
         private Dictionary<int, HashSet<int>> txReadSet = new Dictionary<int, HashSet<int>>();
@@ -27,9 +30,11 @@ namespace ServerLib.Transactions
 
         public int ReadValue(int txid, int key)
         {
+            Console.WriteLine("Cenas das dsasdassdassas");
+            doJoinTransaction(txid);
+
             int value;
 
-            /* Add key to read set, if the set doesn't exist create it */
             if (!txReadSet.ContainsKey(txid))
             {
                 txReadSet[txid] = new HashSet<int>();
@@ -37,7 +42,6 @@ namespace ServerLib.Transactions
 
             txReadSet[txid].Add(key);
 
-            /* Check if the PadInt was already changed in this transaction if true return it, else go to the storage */
             if (txPadInts.ContainsKey(txid) && txPadInts[txid].ContainsKey(key))
             {
                 txPadInts[txid].TryGetValue(key, out value);
@@ -54,7 +58,8 @@ namespace ServerLib.Transactions
 
         public void WriteValue(int txid, int key, int value)
         {
-            /* Add key to write set, if the set doesn't exist create it */
+            doJoinTransaction(txid);
+
             if (!txWriteSet.ContainsKey(txid))
             {
                 txWriteSet[txid] = new HashSet<int>();
@@ -62,7 +67,6 @@ namespace ServerLib.Transactions
 
             txWriteSet[txid].Add(key);
 
-            /* Add key to write set, if the set doesn't exist create it */
             if (!txPadInts.ContainsKey(txid))
             {
                 txPadInts[txid] = new Dictionary<int, int>();
@@ -70,7 +74,8 @@ namespace ServerLib.Transactions
 
             txPadInts[txid][key] = value;
 
-            /* Check if can write PadInt `key` */
+            /* TODO: Check if can write PadInt `key` */
+
             storage.WriteValue(key, value);
 
             Console.WriteLine("Tx {0} wrote the PadInt {1} with value {2}", txid, key, value);
@@ -92,7 +97,7 @@ namespace ServerLib.Transactions
                 HashSet<int> conflicts = writeOtherReads(txid);
                 foreach (int conflict in conflicts)
                 {
-                    /* TODO: Abort transaction `conflict` */
+                    // TODO: Abort transaction `conflict`
                 }
             }
         }
@@ -123,7 +128,7 @@ namespace ServerLib.Transactions
         }
 
         /*
-         * Checks if a transaction is read-only, didn't change any PadInts
+         * Checks if a transaction is read-only (didn't wrote any PadInts)
          */
 
         private Boolean isReadOnlyTx(int txid)
@@ -188,6 +193,10 @@ namespace ServerLib.Transactions
             return conflicts;
         }
 
+        /*
+         *  Removes all the traces of the transaction
+         */
+
         private void clean(int txid, Boolean isFail = false)
         {
             txReadSet.Remove(txid);
@@ -220,6 +229,15 @@ namespace ServerLib.Transactions
         public bool Recover()
         {
             return true;
+        }
+
+        private void doJoinTransaction(int txid)
+        {
+            if (!startTxids.ContainsKey(txid))
+            {
+                startTxids.Add(txid, biggestCommitedTxid);
+                mainServer.JoinTransaction(txid, Config.REMOTE_SERVER_URL);
+            }
         }
     }
 }
