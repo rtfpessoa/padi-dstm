@@ -15,5 +15,25 @@ namespace Server
             : base(new KeyValueStorage())
         {
         }
+
+        public bool Status()
+        {
+            return true;
+        }
+
+        public bool Fail()
+        {
+            return true;
+        }
+
+        public bool Freeze()
+        {
+            return true;
+        }
+
+        public bool Recover()
+        {
+            return true;
+        }
     }
 }

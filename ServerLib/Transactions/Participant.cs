@@ -31,7 +31,7 @@ namespace ServerLib.Transactions
         public int ReadValue(int txid, int key)
         {
             Console.WriteLine("Cenas das dsasdassdassas");
-            doJoinTransaction(txid);
+            DoJoinTransaction(txid);
 
             int value;
 
@@ -58,7 +58,7 @@ namespace ServerLib.Transactions
 
         public void WriteValue(int txid, int key, int value)
         {
-            doJoinTransaction(txid);
+            DoJoinTransaction(txid);
 
             if (!txWriteSet.ContainsKey(txid))
             {
@@ -211,27 +211,7 @@ namespace ServerLib.Transactions
             }
         }
 
-        public bool Status()
-        {
-            return true;
-        }
-
-        public bool Fail()
-        {
-            return true;
-        }
-
-        public bool Freeze()
-        {
-            return true;
-        }
-
-        public bool Recover()
-        {
-            return true;
-        }
-
-        private void doJoinTransaction(int txid)
+        private void DoJoinTransaction(int txid)
         {
             if (!startTxids.ContainsKey(txid))
             {
