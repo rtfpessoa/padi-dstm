@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ServerLib.Storage
 {
-    internal interface IStorage
+    public interface IStorage
     {
         int ReadValue(int key);
 

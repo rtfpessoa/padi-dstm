@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace ServerLib.Transactions
 {
-    public class Coordinator : ICoordinator
+    public abstract class Coordinator : ICoordinator
     {
-        int currentTxid = 0;
+        private int currentTxid = 0;
         private Dictionary<int, List<ParticipantProxy>> transactions = new Dictionary<int, List<ParticipantProxy>>();
 
         /**

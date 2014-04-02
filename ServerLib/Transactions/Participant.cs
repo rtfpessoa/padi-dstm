@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ServerLib.Transactions
 {
-    internal abstract class Participant : IParticipant
+    public abstract class Participant : IParticipant
     {
         private IStorage storage;
 
@@ -200,6 +200,26 @@ namespace ServerLib.Transactions
             {
                 txWriteSet.Remove(txid);
             }
+        }
+
+        public bool Status()
+        {
+            return true;
+        }
+
+        public bool Fail()
+        {
+            return true;
+        }
+
+        public bool Freeze()
+        {
+            return true;
+        }
+
+        public bool Recover()
+        {
+            return true;
         }
     }
 }
