@@ -41,6 +41,8 @@
   <ItemGroup>
     <Compile Include="Config.cs" />
     <Compile Include="IMainServer.cs" />
+    <Compile Include="IPADIDSTMLibrary.cs" />
+    <Compile Include="IPadInt.cs" />
     <Compile Include="IServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
