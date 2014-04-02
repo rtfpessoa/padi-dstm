@@ -38,7 +38,7 @@ namespace ServerLib.Transactions
             ParticipantProxy participant = new ParticipantProxy(endpoint);
             participants.Add(participant);
 
-            Console.WriteLine("Server {0} joined to transaction {0}", endpoint, txid);
+            Console.WriteLine("Server {0} joined to transaction {1}", endpoint, txid);
         }
 
         /**
@@ -59,13 +59,13 @@ namespace ServerLib.Transactions
                     proxy.PrepareTransaction(txid);
                     participant.readyToCommit = true;
 
-                    Console.WriteLine("{0} prepared for transaction {0}", participant.endpoint, txid);
+                    Console.WriteLine("{0} prepared for transaction {1}", participant.endpoint, txid);
                 }
                 catch (TxException ex)
                 {
                     participant.readyToCommit = false;
 
-                    Console.WriteLine("{0} failed to prepare transaction {0}", participant.endpoint, txid);
+                    Console.WriteLine("{0} failed to prepare transaction {1}", participant.endpoint, txid);
                     Console.WriteLine(ex.ToString());
                 }
             }
@@ -119,13 +119,13 @@ namespace ServerLib.Transactions
                     proxy.CommitTransaction(txid);
                     result = true;
 
-                    Console.WriteLine("{0} commited transaction {0}", participant.endpoint, txid);
+                    Console.WriteLine("{0} commited transaction {1}", participant.endpoint, txid);
                 }
                 catch (TxException ex)
                 {
                     result = false;
 
-                    Console.WriteLine("{0} failed to commit transaction {0}", participant.endpoint, txid);
+                    Console.WriteLine("{0} failed to commit transaction {1}", participant.endpoint, txid);
                     Console.WriteLine(ex.ToString());
 
                     break;
@@ -165,13 +165,13 @@ namespace ServerLib.Transactions
             {
                 proxy.AbortTransaction(txid);
 
-                Console.WriteLine("{0} aborted transaction {0}", participant.endpoint, txid);
+                Console.WriteLine("{0} aborted transaction {1}", participant.endpoint, txid);
 
                 return true;
             }
             catch (TxException ex)
             {
-                Console.WriteLine("{0} failed to abort transaction {0}", participant.endpoint, txid);
+                Console.WriteLine("{0} failed to abort transaction {1}", participant.endpoint, txid);
                 Console.WriteLine(ex.ToString());
 
                 return false;
