@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ServerLib.Transactions
@@ -11,11 +12,11 @@ namespace ServerLib.Transactions
     {
         private IStorage storage;
 
-        private Dictionary<int, List<int>> txReadSet = new Dictionary<int, List<int>>();
-        private Dictionary<int, List<int>> txWriteSet = new Dictionary<int, List<int>>();
+        private Dictionary<int, HashSet<int>> txReadSet = new Dictionary<int, HashSet<int>>();
+        private Dictionary<int, HashSet<int>> txWriteSet = new Dictionary<int, HashSet<int>>();
 
-        private Dictionary<int, List<KeyValuePair<int, int>>> txPadInts = new Dictionary<int, List<KeyValuePair<int, int>>>();
-        
+        private Dictionary<int, Dictionary<int, int>> txPadInts = new Dictionary<int, Dictionary<int, int>>();
+
         private int biggestCommitedTxid = 0;
         private Dictionary<int, int> startTxids = new Dictionary<int, int>();
 
@@ -26,18 +27,53 @@ namespace ServerLib.Transactions
 
         public int ReadValue(int txid, int key)
         {
-            /* TODO: Add to read set */ 
-            
-            return storage.ReadValue(key);
+            int value;
+
+            /* Add key to read set, if the set doesn't exist create it */
+            if (!txReadSet.ContainsKey(txid))
+            {
+                txReadSet[txid] = new HashSet<int>();
+            }
+
+            txReadSet[txid].Add(key);
+
+            /* Check if the PadInt was already changed in this transaction if true return it, else go to the storage */
+            if (txPadInts.ContainsKey(txid) && txPadInts[txid].ContainsKey(key))
+            {
+                txPadInts[txid].TryGetValue(key, out value);
+            }
+            else
+            {
+                value = storage.ReadValue(key);
+            }
+
+            Console.WriteLine("Tx {0} read the PadInt {1} with value {2}", txid, key, value);
+
+            return value;
         }
 
         public void WriteValue(int txid, int key, int value)
         {
-            /* TODO: Add to write set */
+            /* Add key to write set, if the set doesn't exist create it */
+            if (!txWriteSet.ContainsKey(txid))
+            {
+                txWriteSet[txid] = new HashSet<int>();
+            }
 
-            /* TODO: Add/Update transaction PadInts */ 
-            
+            txWriteSet[txid].Add(key);
+
+            /* Add key to write set, if the set doesn't exist create it */
+            if (!txPadInts.ContainsKey(txid))
+            {
+                txPadInts[txid] = new Dictionary<int, int>();
+            }
+
+            txPadInts[txid][key] = value;
+
+            /* Check if can write PadInt `key` */
             storage.WriteValue(key, value);
+
+            Console.WriteLine("Tx {0} wrote the PadInt {1} with value {2}", txid, key, value);
         }
 
         public void PrepareTransaction(int txid)
@@ -46,54 +82,56 @@ namespace ServerLib.Transactions
             {
                 /* TODO: Lock all PadInts */
 
-                /* TODO: Verify if it reads others writes */
-
-                /* TODO: Verify if it writes others reads */
-                
-                if (false)
+                if (readOtherWrites(txid))
                 {
+                    /* TODO: Release locks */
+
                     throw new TxException();
+                }
+
+                HashSet<int> conflicts = writeOtherReads(txid);
+                foreach (int conflict in conflicts)
+                {
+                    /* TODO: Abort transaction `conflict` */
                 }
             }
         }
 
         public void CommitTransaction(int txid)
         {
-            /* TODO: Replace PadInt with the transaction ones */
-
-            /* TODO: Release locks */
-            
-            if (false)
+            if (!isReadOnlyTx(txid))
             {
-                throw new TxException();
+                foreach (KeyValuePair<int, int> padint in txPadInts[txid])
+                {
+                    storage.WriteValue(padint.Key, padint.Value);
+                }
             }
 
-            txReadSet.Remove(txid);
+            /* TODO: Release locks */
 
             if (biggestCommitedTxid < txid)
             {
                 biggestCommitedTxid = txid;
             }
 
-            startTxids.Remove(txid);
+            clean(txid);
         }
 
         public void AbortTransaction(int txid)
         {
-            if (false)
-            {
-                throw new TxException();
-            }
+            clean(txid, true);
         }
 
         /*
          * Checks if a transaction is read-only, didn't change any PadInts
          */
+
         private Boolean isReadOnlyTx(int txid)
         {
-            List<int> writes;
+            HashSet<int> writes;
 
-            if(txWriteSet.TryGetValue(txid, out writes)) {
+            if (txWriteSet.TryGetValue(txid, out writes))
+            {
                 return true;
             }
 
@@ -104,41 +142,42 @@ namespace ServerLib.Transactions
          * Checks if there are any changed PadInts between the transaction reads
          *  and all the overlaping transactions writes that already commited
          */
-        private List<int> readOtherWrites(int txid)
+
+        private Boolean readOtherWrites(int txid)
         {
             int startTxid, endTxid = biggestCommitedTxid;
             startTxids.TryGetValue(txid, out startTxid);
 
-            List<int> reads;
+            HashSet<int> reads;
             txReadSet.TryGetValue(txid, out reads);
 
-            List<int> conflicts = new List<int>();
             for (int overlapTxid = startTxid; overlapTxid <= endTxid; overlapTxid++)
             {
-                List<int> overlapTxWrites;
+                HashSet<int> overlapTxWrites;
                 if (txWriteSet.TryGetValue(overlapTxid, out overlapTxWrites))
                 {
                     if (overlapTxWrites.Intersect(reads).Any())
                     {
-                        conflicts.Add(overlapTxid);
+                        return true;
                     }
                 }
             }
 
-            return conflicts;
+            return false;
         }
 
         /*
          * Checks if there are any changed PadInts between the transaction writes
          *  and all the overlaping transactions reads that still active
          */
-        private List<int> writeOtherReads(int txid)
+
+        private HashSet<int> writeOtherReads(int txid)
         {
-            List<int> writes;
+            HashSet<int> writes;
             txWriteSet.TryGetValue(txid, out writes);
 
-            List<int> conflicts = new List<int>();
-            foreach (KeyValuePair<int, List<int>> overlapTx in txReadSet)
+            HashSet<int> conflicts = new HashSet<int>();
+            foreach (KeyValuePair<int, HashSet<int>> overlapTx in txReadSet)
             {
                 if (overlapTx.Key != txid && overlapTx.Value.Intersect(writes).Any())
                 {
@@ -147,6 +186,20 @@ namespace ServerLib.Transactions
             }
 
             return conflicts;
+        }
+
+        private void clean(int txid, Boolean isFail = false)
+        {
+            txReadSet.Remove(txid);
+
+            txPadInts.Remove(txid);
+
+            startTxids.Remove(txid);
+
+            if (isFail)
+            {
+                txWriteSet.Remove(txid);
+            }
         }
     }
 }
