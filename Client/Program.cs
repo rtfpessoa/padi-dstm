@@ -14,9 +14,9 @@ namespace Client
         [STAThread]
         private static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            //Application.EnableVisualStyles();
+            //Application.SetCompatibleTextRenderingDefault(false);
+            //Application.Run(new Form1());
 
             TcpChannel channelServ = new TcpChannel(9997);
             ChannelServices.RegisterChannel(channelServ, true);
