@@ -9,6 +9,15 @@ namespace PADI_DSTM
 {
     public class PadInt : IPadInt
     {
+        private readonly int uid;
+        private readonly IServer server;
+
+        public PadInt(int uid, IServer server)
+        {
+            this.uid = uid;
+            this.server = server;
+        }
+
         public int Read()
         {
             throw new NotImplementedException();
