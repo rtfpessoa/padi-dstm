@@ -15,7 +15,7 @@
         /// <exception cref="TxException"></exception>
         void AbortTransaction(int txid);
 
-        string Status();
+        bool Status();
 
         bool Fail();
 

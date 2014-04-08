@@ -15,7 +15,7 @@ namespace PADI_DSTM
     /*
     *   Lib created to be linked to every client application that uses PADI-DSTM 
     */
-    public class PadiDstm : MarshalByRefObject
+    public class PadiDstm
     {
         /* Variavel com o identificador da transacao actual */
         private static int currentTxInt;
@@ -187,13 +187,10 @@ namespace PADI_DSTM
                 IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);                
 
                 /* 2. Temos que obter a list dos status dos servidores */
-                string[] ex = mainServer.getServerStatus();
+                bool ex = mainServer.getServerStatus();
 
                 /* DEBUG PROPOSES */
-                for (int i = 0; i < ex.Length; i++)
-                {
-                    Console.WriteLine("[Client.Status] Server {0} is {1}", i, ex[i]);
-                }
+                Console.WriteLine("[Servers.Status] {0}", ex);
 
                 channelServ.StopListening(null);
                 ChannelServices.UnregisterChannel(channelServ);

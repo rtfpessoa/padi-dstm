@@ -12,12 +12,12 @@ namespace Server
         {
         }
 
-        public string Status()
+        public bool Status()
         {
             Console.WriteLine("[ServerStatus] Entering/Exiting Status");
             
             /* No futuro deve ir buscar o status do servidor ("OK", "Freeze", "Fail") */
-            return "OK";
+            return true;
         }
 
         public bool Fail()

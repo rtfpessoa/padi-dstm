@@ -16,6 +16,6 @@
         string[] getServerList();
 
         /* Function to give to the client the all Server Status */
-        string[] getServerStatus();
+        bool getServerStatus();
     }
 }

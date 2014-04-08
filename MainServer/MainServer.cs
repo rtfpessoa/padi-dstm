@@ -46,50 +46,9 @@ namespace MainServer
         }
 
         /* Give the Server List */
-        public string[] getServerStatus()
+        public bool getServerStatus()
         {
-            Console.WriteLine("[GetServerStatus] Entering GetServerList method");
-
-            /* Create a string List because we don't know how much servers exist */
-            List<string> serversStatusList = new List<string>();
-
-            /* Try to red from file 'ServerList' */
-            try
-            {
-                using (StreamReader sr = new StreamReader("..\\..\\ServerList.txt"))
-                {
-                    String serverURL;
-                    while ((serverURL = sr.ReadLine()) != null)
-                    {
-                        Console.WriteLine("[GetServerStatus] Read line {0} from ServerList.txt", serverURL);
-                        try
-                        {
-                            IServer server = (IServer)Activator.GetObject(typeof(IServer), serverURL);
-
-                            /* TALVEZ AQUI SEJA PRECISO ALGO MAIS DO MAIN SERVER */
-
-                            /* 2. Temos que obter a list de servidores do sistema dada pelo MS */
-                            serversStatusList.Add(server.Status());
-
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine("[GetServerStatus] Cannot contact server {0}", serverURL);
-                            Console.WriteLine("[GetServerStatus] {0}", e.Message);
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("[GetServerStatus] The file could not be read:");
-                Console.WriteLine("[GetServerStatus] {0}", e.Message);
-            }
-
-            Console.WriteLine("[GetServerStatus] Exiting GetServerList method");
-
-            /* Return a string array */
-            return serversStatusList.ToArray();
+            return true;
         }
     }
 }
