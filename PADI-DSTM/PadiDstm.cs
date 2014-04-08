@@ -31,12 +31,14 @@ namespace PADI_DSTM
         */
         public static bool Init() 
         {
+            TcpChannel channelServ = new TcpChannel();
+            ChannelServices.RegisterChannel(channelServ, true);
+            
             Console.WriteLine("[Client.Init] Entering Client.Init");
+                
             try
             {
                 /* 1. Tem de ser criada a ligação com o servidor principal */
-                TcpChannel channelServ = new TcpChannel();
-                ChannelServices.RegisterChannel(channelServ, true);
                 IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
 
                 /* TALVEZ AQUI SEJA PRECISO ALGO MAIS DO MAIN SERVER */
@@ -49,9 +51,6 @@ namespace PADI_DSTM
                 {
                     Console.WriteLine("[Client.Init] Server {0}: {1}", i, serverList[i]);
                 }
-
-                channelServ.StopListening(null);
-                ChannelServices.UnregisterChannel(channelServ);
             }
             catch (Exception e)
             {
@@ -74,8 +73,6 @@ namespace PADI_DSTM
             try
             {
                 /* 1. Tem de ser criada a ligação com o servidor principal (Duvida: todas as transacoes vao primeiro ao main server certo) */
-                TcpChannel channelServ = new TcpChannel();
-                ChannelServices.RegisterChannel(channelServ, true);
                 IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
 
                 /* 2. Chamar o metodo do servidor que dá inicio a transação */
@@ -85,9 +82,6 @@ namespace PADI_DSTM
                 Console.WriteLine("[Client.TxBegin] txInt: {0}", currentTxInt);
 
                 /* TALVEZ FAZER ALGO MAIS COM O IDENTIFICADOR DA TRANSACAO */
-
-                channelServ.StopListening(null);
-                ChannelServices.UnregisterChannel(channelServ);
             }
             catch (Exception e)
             {
@@ -111,17 +105,12 @@ namespace PADI_DSTM
             try
             {
                 /* 1. Tem de ser criada a ligação com o servidor principal (Duvida: todas as transacoes vao primeiro ao main server certo) */
-                TcpChannel channelServ = new TcpChannel();
-                ChannelServices.RegisterChannel(channelServ, true);
                 IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
 
                 /* 2. Chamar o metodo do servidor que dá inicio ao commit da transação */
                 mainServer.CommitTransaction(currentTxInt);
 
                 /* TALVEZ FAZER ALGO MAIS ??? */
-
-                channelServ.StopListening(null);
-                ChannelServices.UnregisterChannel(channelServ);
             }
             catch (Exception e)
             {
@@ -145,17 +134,12 @@ namespace PADI_DSTM
             try
             {
                 /* 1. Tem de ser criada a ligação com o servidor principal (Duvida: todas as transacoes vao primeiro ao main server certo) */
-                TcpChannel channelServ = new TcpChannel();
-                ChannelServices.RegisterChannel(channelServ, true);
                 IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
 
                 /* 2. Chamar o metodo do servidor que dá inicio ao commit da transação */
                 mainServer.AbortTransaction(currentTxInt);
 
                 /* TALVEZ FAZER ALGO MAIS ??? */
-
-                channelServ.StopListening(null);
-                ChannelServices.UnregisterChannel(channelServ);
             }
             catch (Exception e)
             {
@@ -182,8 +166,6 @@ namespace PADI_DSTM
             try
             {
                 /* 1. Tem de ser criada a ligação com o servidor principal */
-                TcpChannel channelServ = new TcpChannel();
-                ChannelServices.RegisterChannel(channelServ, true);
                 IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);                
 
                 /* 2. Temos que obter a list dos status dos servidores */
@@ -191,9 +173,6 @@ namespace PADI_DSTM
 
                 /* DEBUG PROPOSES */
                 Console.WriteLine("[Servers.Status] {0}", ex);
-
-                channelServ.StopListening(null);
-                ChannelServices.UnregisterChannel(channelServ);
             }
             catch (Exception e)
             {
@@ -220,15 +199,10 @@ namespace PADI_DSTM
             try
             {
                 /* 1. Deverá ser criada uma connecção com o servidor indicado no "url" */
-                TcpChannel channelServ = new TcpChannel();
-                ChannelServices.RegisterChannel(channelServ, true);
                 IServer server = (IServer)Activator.GetObject(typeof(IServer), url);
 
                 /* 2. Chamar metodo presente nele que congela ele proprio */
                 fail = server.Fail();
-
-                channelServ.StopListening(null);
-                ChannelServices.UnregisterChannel(channelServ);
             }
             catch (Exception e)
             {
@@ -257,15 +231,10 @@ namespace PADI_DSTM
             try
             {
                 /* 1. Deverá ser criada uma connecção com o servidor indicado no "url" */
-                TcpChannel channelServ = new TcpChannel();
-                ChannelServices.RegisterChannel(channelServ, true);
                 IServer server = (IServer)Activator.GetObject(typeof(IServer), url);
 
                 /* 2. Chamar metodo presente nele que congela ele proprio */
                 freeze = server.Freeze();
-
-                channelServ.StopListening(null);
-                ChannelServices.UnregisterChannel(channelServ);
             }
             catch (Exception e)
             {
@@ -291,15 +260,10 @@ namespace PADI_DSTM
             try
             {                 
                 /* 1. Deverá ser criada uma connecção com o servidor indicado no "url" */
-                TcpChannel channelServ = new TcpChannel();
-                ChannelServices.RegisterChannel(channelServ, true);
                 IServer server = (IServer)Activator.GetObject(typeof(IServer), url);
 
                 /* 2. Chamar metodo presente nele que renicia-o */
                 recover = server.Recover();
-
-                channelServ.StopListening(null);
-                ChannelServices.UnregisterChannel(channelServ);
             }
             catch (Exception e)
             {
@@ -361,3 +325,4 @@ namespace PADI_DSTM
         }
     }
 }
+
