@@ -1,6 +1,5 @@
 ﻿using CommonTypes;
 using System.Diagnostics;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,24 +23,22 @@ namespace PADI_DSTM
 
         /*
         *      INTERACTION WITH SERVERS
-        */        
-        
+        */
+
         /* 
         *   This method is called only once by the application and initializaes de PADI-DSTM library  
         */
-        public static bool Init() 
+        public static bool Init()
         {
             TcpChannel channelServ = new TcpChannel();
             ChannelServices.RegisterChannel(channelServ, true);
-            
+
             Console.WriteLine("[Client.Init] Entering Client.Init");
-                
+
             try
             {
                 /* 1. Tem de ser criada a ligação com o servidor principal */
                 IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
-
-                /* TALVEZ AQUI SEJA PRECISO ALGO MAIS DO MAIN SERVER */
 
                 /* 2. Temos que obter a list de servidores do sistema dada pelo MS */
                 serverList = mainServer.getServerList();
@@ -54,17 +51,15 @@ namespace PADI_DSTM
             }
             catch (Exception e)
             {
-                Console.WriteLine("[Client.Init] Exception caught : {0}", e.Message);
-                Console.WriteLine("[Client.Init] Exiting Client.Init");
+                Console.WriteLine("[Client.Init] Exception caught : {0}", e.StackTrace);
                 return false;
             }
 
-            Console.WriteLine("[Client.Init] Entering Client.Init");
             return true;
         }
 
         /* 
-        *   This m-ethod starts a new transaction and returns a boolean value indicating whether the
+        *   This method starts a new transaction and returns a boolean value indicating whether the
         *   operation succeeded. This method may throw a TxException
         */
         public static bool TxBegin()
@@ -77,21 +72,17 @@ namespace PADI_DSTM
 
                 /* 2. Chamar o metodo do servidor que dá inicio a transação */
                 currentTxInt = mainServer.StartTransaction();
-                
+
                 /* DEBUG PROPOSES */
                 Console.WriteLine("[Client.TxBegin] txInt: {0}", currentTxInt);
-
-                /* TALVEZ FAZER ALGO MAIS COM O IDENTIFICADOR DA TRANSACAO */
             }
             catch (Exception e)
             {
-                Console.WriteLine("[Client.TxBegin] Exception caught : {0}", e.Message);
-                Console.WriteLine("[Client.TxBegin] Exiting Client.TxBegin");
+                Console.WriteLine("[Client.TxBegin] Exception caught : {0}", e.StackTrace);
                 return false;
             }
 
-            Console.WriteLine("[Client.TxBegin] Entering Client.TxBegin");
-            return true;        
+            return true;
         }
 
         /* 
@@ -109,18 +100,14 @@ namespace PADI_DSTM
 
                 /* 2. Chamar o metodo do servidor que dá inicio ao commit da transação */
                 mainServer.CommitTransaction(currentTxInt);
-
-                /* TALVEZ FAZER ALGO MAIS ??? */
             }
             catch (Exception e)
             {
-                Console.WriteLine("[Client.TxCommit] Exception caught : {0}", e.Message);
-                Console.WriteLine("[Client.TxCommit] Exiting Client.TxCommit");
+                Console.WriteLine("[Client.TxCommit] Exception caught : {0}", e.StackTrace);
                 return false;
             }
 
-            Console.WriteLine("[Client.TxBegin] Entering Client.TxCommit");
-            return true;        
+            return true;
         }
 
         /* 
@@ -138,18 +125,14 @@ namespace PADI_DSTM
 
                 /* 2. Chamar o metodo do servidor que dá inicio ao commit da transação */
                 mainServer.AbortTransaction(currentTxInt);
-
-                /* TALVEZ FAZER ALGO MAIS ??? */
             }
             catch (Exception e)
             {
-                Console.WriteLine("[Client.TxAbort] Exception caught : {0}", e.Message);
-                Console.WriteLine("[Client.TxAbort] Exiting Client.TxAbort");
+                Console.WriteLine("[Client.TxAbort] Exception caught : {0}", e.StackTrace);
                 return false;
             }
 
-            Console.WriteLine("[Client.TxAbort] Entering Client.TxAbort");
-            return true;        
+            return true;
         }
 
         /* 
@@ -166,7 +149,7 @@ namespace PADI_DSTM
             try
             {
                 /* 1. Tem de ser criada a ligação com o servidor principal */
-                IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);                
+                IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
 
                 /* 2. Temos que obter a list dos status dos servidores */
                 bool ex = mainServer.getServerStatus();
@@ -176,12 +159,9 @@ namespace PADI_DSTM
             }
             catch (Exception e)
             {
-                Console.WriteLine("[Client.Status] Exception : {0}", e.Message);
-                Console.WriteLine("[Client.Status] Exiting Status");
+                Console.WriteLine("[Client.Status] Exception : {0}", e.StackTrace);
                 return false;
             }
-
-            Console.WriteLine("[Client.Status] Exiting Status");
 
             return true;
         }
@@ -206,12 +186,10 @@ namespace PADI_DSTM
             }
             catch (Exception e)
             {
-                Console.WriteLine("[Client.Fail] Exception : {0}", e.Message);
-                Console.WriteLine("[Client.Fail] Exiting Fail");
+                Console.WriteLine("[Client.Fail] Exception : {0}", e.StackTrace);
                 return false;
             }
 
-            Console.WriteLine("[Client.Fail] Exiting Fail");
             return fail;
         }
 
@@ -238,12 +216,10 @@ namespace PADI_DSTM
             }
             catch (Exception e)
             {
-                Console.WriteLine("[Client.Freeze] Exception : {0}", e.Message);
-                Console.WriteLine("[Client.Freeze] Exiting Freeze");
+                Console.WriteLine("[Client.Freeze] Exception : {0}", e.StackTrace);
                 return false;
             }
 
-            Console.WriteLine("[Client.Freeze] Exiting Freeze");
             return freeze;
         }
 
@@ -258,7 +234,7 @@ namespace PADI_DSTM
             bool recover = false;
 
             try
-            {                 
+            {
                 /* 1. Deverá ser criada uma connecção com o servidor indicado no "url" */
                 IServer server = (IServer)Activator.GetObject(typeof(IServer), url);
 
@@ -267,12 +243,10 @@ namespace PADI_DSTM
             }
             catch (Exception e)
             {
-                Console.WriteLine("[Client.Recover] Exception : {0}", e.Message);
-                Console.WriteLine("[Client.Recover] Exiting Recover");
+                Console.WriteLine("[Client.Recover] Exception : {0}", e.StackTrace);
                 return false;
             }
 
-            Console.WriteLine("[Client.Recover] Exiting Recover");
             return recover;
         }
 
@@ -309,20 +283,4 @@ namespace PADI_DSTM
             return null;
         }
     }
-
-
-    /* IMPLEMETATION OBJ PADINT */
-    public class PadInt : IPadInt
-    {
-        public int Read()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Write(int value)
-        {
-            throw new NotImplementedException();
-        }
-    }
 }
-
