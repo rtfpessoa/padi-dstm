@@ -17,6 +17,8 @@ namespace ServerLib.Transactions
 
         private Dictionary<int, Dictionary<int, int>> txPadInts = new Dictionary<int, Dictionary<int, int>>();
 
+        private HashSet<int> padIntLocks = new HashSet<int>();
+
         private int biggestCommitedTxid = 0;
         private Dictionary<int, int> startTxids = new Dictionary<int, int>();
 
@@ -27,7 +29,6 @@ namespace ServerLib.Transactions
 
         public int ReadValue(int txid, int key)
         {
-            Console.WriteLine("Cenas das dsasdassdassas");
             DoJoinTransaction(txid);
 
             int value;
@@ -71,8 +72,6 @@ namespace ServerLib.Transactions
 
             txPadInts[txid][key] = value;
 
-            /* TODO: Check if can write PadInt `key` */
-
             storage.WriteValue(key, value);
 
             Console.WriteLine("Tx {0} wrote the PadInt {1} with value {2}", txid, key, value);
@@ -82,11 +81,22 @@ namespace ServerLib.Transactions
         {
             if (!isReadOnlyTx(txid))
             {
-                /* TODO: Lock all PadInts */
+                foreach (int padInt in txWriteSet[txid])
+                {
+                    if (!padIntLocks.Contains(padInt))
+                    {
+                        padIntLocks.Add(padInt);
+                    } else {
+                        throw new TxException();
+                    }
+                }
 
                 if (readOtherWrites(txid))
                 {
-                    /* TODO: Release locks */
+                    foreach (int padInt in txWriteSet[txid])
+                    {
+                        padIntLocks.Remove(padInt);
+                    }
 
                     throw new TxException();
                 }
@@ -109,7 +119,10 @@ namespace ServerLib.Transactions
                 }
             }
 
-            /* TODO: Release locks */
+            foreach (int padInt in txWriteSet[txid])
+            {
+                padIntLocks.Remove(padInt);
+            }
 
             if (biggestCommitedTxid < txid)
             {
@@ -132,7 +145,7 @@ namespace ServerLib.Transactions
         {
             HashSet<int> writes;
 
-            if (txWriteSet.TryGetValue(txid, out writes))
+            if (!txWriteSet.TryGetValue(txid, out writes))
             {
                 return true;
             }
@@ -156,7 +169,7 @@ namespace ServerLib.Transactions
             for (int overlapTxid = startTxid; overlapTxid <= endTxid; overlapTxid++)
             {
                 HashSet<int> overlapTxWrites;
-                if (txWriteSet.TryGetValue(overlapTxid, out overlapTxWrites))
+                if (overlapTxid != txid && txWriteSet.TryGetValue(overlapTxid, out overlapTxWrites))
                 {
                     if (overlapTxWrites.Intersect(reads).Any())
                     {
@@ -212,6 +225,10 @@ namespace ServerLib.Transactions
         {
             if (!startTxids.ContainsKey(txid))
             {
+                txPadInts.Add(txid, new Dictionary<int, int>());
+                txReadSet.Add(txid, new HashSet<int>());
+                txWriteSet.Add(txid, new HashSet<int>());
+                
                 startTxids.Add(txid, biggestCommitedTxid);
                 mainServer.JoinTransaction(txid, Config.REMOTE_SERVER_URL);
             }

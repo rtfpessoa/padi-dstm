@@ -22,10 +22,17 @@ namespace Client
             ChannelServices.RegisterChannel(channelServ, true);
 
             IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
-            int txid = mainServer.StartTransaction();
-
             IServer server = (IServer)Activator.GetObject(typeof(IServer), Config.REMOTE_SERVER_URL);
-            server.ReadValue(txid, 1);
+
+
+            int txid1 = mainServer.StartTransaction();
+            int txid2 = mainServer.StartTransaction();
+            server.ReadValue(txid1, 1);
+            server.WriteValue(txid1, 1, 10);
+            server.ReadValue(txid2, 1);
+            server.WriteValue(txid2, 1, 10);
+            mainServer.CommitTransaction(txid1);
+            mainServer.CommitTransaction(txid2);
         }
     }
 }
