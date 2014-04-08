@@ -12,8 +12,8 @@ using System.Runtime.Remoting.Channels.Tcp;
 namespace PADI_DSTM
 {
     /*
-    *   Lib created to be linked to every client application that uses PADI-DSTM 
-    */
+* Lib created to be linked to every client application that uses PADI-DSTM
+*/
     public class PadiDstm
     {
         /* Variavel com o identificador da transacao actual */
@@ -22,18 +22,18 @@ namespace PADI_DSTM
         private static string[] serverList;
 
         /*
-        *      INTERACTION WITH SERVERS
-        */
+* INTERACTION WITH SERVERS
+*/
 
-        /* 
-        *   This method is called only once by the application and initializaes de PADI-DSTM library  
-        */
+        /*
+* This method is called only once by the application and initializaes de PADI-DSTM library
+*/
         public static bool Init()
         {
-            Console.WriteLine("[Client.Init] Entering Client.Init");
-
             TcpChannel channelServ = new TcpChannel();
             ChannelServices.RegisterChannel(channelServ, true);
+
+            Console.WriteLine("[Client.Init] Entering Client.Init");
 
             try
             {
@@ -52,18 +52,16 @@ namespace PADI_DSTM
             catch (Exception e)
             {
                 Console.WriteLine("[Client.Init] Exception caught : {0}", e.StackTrace);
-                Console.WriteLine("[Client.Init] Exiting Client.Init");
                 return false;
             }
 
-            Console.WriteLine("[Client.Init] Exiting Client.Init");
             return true;
         }
 
-        /* 
-        *   This method starts a new transaction and returns a boolean value indicating whether the
-        *   operation succeeded. This method may throw a TxException
-        */
+        /*
+* This method starts a new transaction and returns a boolean value indicating whether the
+* operation succeeded. This method may throw a TxException
+*/
         public static bool TxBegin()
         {
             Console.WriteLine("[Client.TxBegin] Entering Client.TxBegin");
@@ -81,18 +79,16 @@ namespace PADI_DSTM
             catch (Exception e)
             {
                 Console.WriteLine("[Client.TxBegin] Exception caught : {0}", e.StackTrace);
-                Console.WriteLine("[Client.TxBegin] Exiting Client.TxBegin");
                 return false;
             }
 
-            Console.WriteLine("[Client.TxBegin] Exiting Client.TxBegin");
             return true;
         }
 
-        /* 
-        *   This method attempts to commit the current transaction and returns a boolean value
-        *   indicating whether the operation succeded. This method may throw a TxException
-        */
+        /*
+* This method attempts to commit the current transaction and returns a boolean value
+* indicating whether the operation succeded. This method may throw a TxException
+*/
         public static bool TxCommit()
         {
             /* 1. Chamar o metodo do servidor que dá inicio ao commit da transação */
@@ -108,18 +104,16 @@ namespace PADI_DSTM
             catch (Exception e)
             {
                 Console.WriteLine("[Client.TxCommit] Exception caught : {0}", e.StackTrace);
-                Console.WriteLine("[Client.TxCommit] Exiting Client.TxCommit");
                 return false;
             }
 
-            Console.WriteLine("[Client.TxCommit] Exiting Client.TxCommit");
             return true;
         }
 
-        /* 
-        *   This method aborts the current transaction and returns a boolean value indicating
-        *   whether the operation succeeded. This method may throw a TxException
-        */
+        /*
+* This method aborts the current transaction and returns a boolean value indicating
+* whether the operation succeeded. This method may throw a TxException
+*/
         public static bool TxAbort()
         {
             /* 1. Chamar o metodo do servidor que aborta current transação*/
@@ -141,47 +135,41 @@ namespace PADI_DSTM
             return true;
         }
 
-        /* 
-        *   This method makes all nodes in the system dump to their output their current state
-        */
+        /*
+* This method makes all nodes in the system dump to their output their current state
+*/
         public static bool Status()
         {
-            Console.WriteLine("[Client.Status] Entering Status");
+            /* Se não se pode enviar a lista de Servers que o cliente já conhece à priori (devido ao Init()) a
+* melhor solução será pedir ao Main Server que por sua vez vai perguntar a todos os servidores
+* conhecidos qual o seu estado */
 
-            bool status = true;
-            bool srvStatus;
+            Console.WriteLine("[Client.Status] Entering Status");
 
             try
             {
-                /* Enviar a todos os servidores conhecidos a chamada ao metodo status */
-                for (int i = 0; i < serverList.Length; i++)
-                {
-                    /* 1. Obter obj servidor */
-                    IServer server = (IServer)Activator.GetObject(typeof(IServer), serverList[i]);
+                /* 1. Tem de ser criada a ligação com o servidor principal */
+                IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
 
-                    /* 2. Chamada ao metodo */
-                    srvStatus = server.Status();
-                    status = status && srvStatus;
+                /* 2. Temos que obter a list dos status dos servidores */
+                bool ex = mainServer.getServerStatus();
 
-                    /* DEBUG PROPOSES */
-                    Console.WriteLine("[Client.Status] Server{0} status: ", srvStatus);
-                }
+                /* DEBUG PROPOSES */
+                Console.WriteLine("[Servers.Status] {0}", ex);
             }
             catch (Exception e)
             {
                 Console.WriteLine("[Client.Status] Exception : {0}", e.StackTrace);
-                Console.WriteLine("[Client.Status] Exiting Status");
                 return false;
             }
 
-            Console.WriteLine("[Client.Status] Exiting Status");
-            return status;
+            return true;
         }
 
-        /* 
-        *   This method makes the server at the URL stop responding to external calls except for
-        *   a Recover call
-        */
+        /*
+* This method makes the server at the URL stop responding to external calls except for
+* a Recover call
+*/
         public static bool Fail(String url)
         {
             Console.WriteLine("[Client.Fail] Entering Fail");
@@ -199,21 +187,19 @@ namespace PADI_DSTM
             catch (Exception e)
             {
                 Console.WriteLine("[Client.Fail] Exception : {0}", e.StackTrace);
-                Console.WriteLine("[Client.Fail] Exiting Fail");
                 return false;
             }
 
-            Console.WriteLine("[Client.Fail] Exiting Fail");
             return fail;
         }
 
-        /* 
-        *   This method makes the server at URL stop responding to external calls but it
-        *   maintains all calls for later reply, as if the communication to that server were
-        *   only delayed. A server in freeze mode responds immediately only to a Recover 
-        *   call (see below), which triggers the execution of the backlog of operations 
-        *   accumulated since the Freeze call
-        */
+        /*
+* This method makes the server at URL stop responding to external calls but it
+* maintains all calls for later reply, as if the communication to that server were
+* only delayed. A server in freeze mode responds immediately only to a Recover
+* call (see below), which triggers the execution of the backlog of operations
+* accumulated since the Freeze call
+*/
         public static bool Freeze(String url)
         {
             Console.WriteLine("[Client.Freeze] Entering Freeze");
@@ -231,18 +217,16 @@ namespace PADI_DSTM
             catch (Exception e)
             {
                 Console.WriteLine("[Client.Freeze] Exception : {0}", e.StackTrace);
-                Console.WriteLine("[Client.Freeze] Exiting Freeze");
                 return false;
             }
 
-            Console.WriteLine("[Client.Freeze] Exiting Freeze");
             return freeze;
         }
 
-        /* 
-        * This method creates a new shared object with the given uid. Returns null if the 
-        * object already exists.
-        */
+        /*
+* This method creates a new shared object with the given uid. Returns null if the
+* object already exists.
+*/
         public static bool Recover(String url)
         {
             Console.WriteLine("[Client.Recover] Entering Recover");
@@ -260,42 +244,40 @@ namespace PADI_DSTM
             catch (Exception e)
             {
                 Console.WriteLine("[Client.Recover] Exception : {0}", e.StackTrace);
-                Console.WriteLine("[Client.Recover] Exiting Recover");
                 return false;
             }
 
-            Console.WriteLine("[Client.Recover] Exiting Recover");
             return recover;
         }
 
 
         /*
-        *      INTERACTION WITH SHARED DISTRIBUTED OBJECTS (PADINT)
-        */
+* INTERACTION WITH SHARED DISTRIBUTED OBJECTS (PADINT)
+*/
 
-        /* 
-        * This method creates a new shared object with the given uid. Returns null if 
-        * the object already exists
-        */
+        /*
+* This method creates a new shared object with the given uid. Returns null if
+* the object already exists
+*/
         public static PadInt CreatePadInt(int uid)
         {
             /* 1. Deverá ser feita a ligação ao servidor que pode ter o objecto (sabe-se isso através
-             * da lista de servidores dada pelo Init() e pelo algoritmo de sharding implementado)
-             */
+* da lista de servidores dada pelo Init() e pelo algoritmo de sharding implementado)
+*/
             /* 2. Verificar se n tem e caso n tiver, cria-lo */
             /* Duvida? Como sabemos o que é um objecto PadInt? Criamos a classe onde?*/
             return null;
         }
 
-        /* 
-        * This method returns a reference to a shared object with the given uid. Returns 
-        * null if the object does not exist already
-        */
+        /*
+* This method returns a reference to a shared object with the given uid. Returns
+* null if the object does not exist already
+*/
         public static PadInt AccessPadInt(int uid)
         {
             /* 1. Deverá ser feita a ligação ao servidor que pode ter o objecto (sabe-se isso através
-             * da lista de servidores dada pelo Init() e pelo algoritmo de sharding implementado)
-             */
+* da lista de servidores dada pelo Init() e pelo algoritmo de sharding implementado)
+*/
             /* 2. Verificar se o tem e caso tiver, returnar uma referencia para ele */
             /* Duvida? Como sabemos o que é um objecto PadInt? Criamos a classe onde?*/
             return null;
