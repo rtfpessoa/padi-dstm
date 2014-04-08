@@ -30,10 +30,10 @@ namespace PADI_DSTM
         */
         public static bool Init()
         {
+            Console.WriteLine("[Client.Init] Entering Client.Init");
+
             TcpChannel channelServ = new TcpChannel();
             ChannelServices.RegisterChannel(channelServ, true);
-
-            Console.WriteLine("[Client.Init] Entering Client.Init");
 
             try
             {
@@ -52,9 +52,11 @@ namespace PADI_DSTM
             catch (Exception e)
             {
                 Console.WriteLine("[Client.Init] Exception caught : {0}", e.StackTrace);
+                Console.WriteLine("[Client.Init] Exiting Client.Init");
                 return false;
             }
 
+            Console.WriteLine("[Client.Init] Exiting Client.Init");
             return true;
         }
 
@@ -79,9 +81,11 @@ namespace PADI_DSTM
             catch (Exception e)
             {
                 Console.WriteLine("[Client.TxBegin] Exception caught : {0}", e.StackTrace);
+                Console.WriteLine("[Client.TxBegin] Exiting Client.TxBegin");
                 return false;
             }
 
+            Console.WriteLine("[Client.TxBegin] Exiting Client.TxBegin");
             return true;
         }
 
@@ -104,9 +108,11 @@ namespace PADI_DSTM
             catch (Exception e)
             {
                 Console.WriteLine("[Client.TxCommit] Exception caught : {0}", e.StackTrace);
+                Console.WriteLine("[Client.TxCommit] Exiting Client.TxCommit");
                 return false;
             }
 
+            Console.WriteLine("[Client.TxCommit] Exiting Client.TxCommit");
             return true;
         }
 
@@ -140,30 +146,36 @@ namespace PADI_DSTM
         */
         public static bool Status()
         {
-            /* Se não se pode enviar a lista de Servers que o cliente já conhece à priori (devido ao Init()) a 
-             * melhor solução será pedir ao Main Server que por sua vez vai perguntar a todos os servidores 
-             * conhecidos qual o seu estado */
-
             Console.WriteLine("[Client.Status] Entering Status");
+
+            bool status = true;
+            bool srvStatus;
 
             try
             {
-                /* 1. Tem de ser criada a ligação com o servidor principal */
-                IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
+                /* Enviar a todos os servidores conhecidos a chamada ao metodo status */
+                for (int i = 0; i < serverList.Length; i++)
+                {
+                    /* 1. Obter obj servidor */
+                    IServer server = (IServer)Activator.GetObject(typeof(IServer), serverList[i]);
 
-                /* 2. Temos que obter a list dos status dos servidores */
-                bool ex = mainServer.getServerStatus();
+                    /* 2. Chamada ao metodo */
+                    srvStatus = server.Status();
+                    status = status && srvStatus;
 
-                /* DEBUG PROPOSES */
-                Console.WriteLine("[Servers.Status] {0}", ex);
+                    /* DEBUG PROPOSES */
+                    Console.WriteLine("[Client.Status] Server{0} status: ", srvStatus);
+                }
             }
             catch (Exception e)
             {
                 Console.WriteLine("[Client.Status] Exception : {0}", e.StackTrace);
+                Console.WriteLine("[Client.Status] Exiting Status");
                 return false;
             }
 
-            return true;
+            Console.WriteLine("[Client.Status] Exiting Status");
+            return status;
         }
 
         /* 
@@ -187,9 +199,11 @@ namespace PADI_DSTM
             catch (Exception e)
             {
                 Console.WriteLine("[Client.Fail] Exception : {0}", e.StackTrace);
+                Console.WriteLine("[Client.Fail] Exiting Fail");
                 return false;
             }
 
+            Console.WriteLine("[Client.Fail] Exiting Fail");
             return fail;
         }
 
@@ -217,9 +231,11 @@ namespace PADI_DSTM
             catch (Exception e)
             {
                 Console.WriteLine("[Client.Freeze] Exception : {0}", e.StackTrace);
+                Console.WriteLine("[Client.Freeze] Exiting Freeze");
                 return false;
             }
 
+            Console.WriteLine("[Client.Freeze] Exiting Freeze");
             return freeze;
         }
 
@@ -244,9 +260,11 @@ namespace PADI_DSTM
             catch (Exception e)
             {
                 Console.WriteLine("[Client.Recover] Exception : {0}", e.StackTrace);
+                Console.WriteLine("[Client.Recover] Exiting Recover");
                 return false;
             }
 
+            Console.WriteLine("[Client.Recover] Exiting Recover");
             return recover;
         }
 
