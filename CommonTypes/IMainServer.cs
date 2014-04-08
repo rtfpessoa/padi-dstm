@@ -11,5 +11,11 @@
 
         /// <exception cref="TxException"></exception>
         void AbortTransaction(int txid);
+
+        /* Function to give to the client the server list */
+        string[] getServerList();
+
+        /* Function to give to the client the all Server Status */
+        string[] getServerStatus();
     }
 }

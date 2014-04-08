@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ServerLib.Transactions
 {
-    public abstract class Coordinator : ICoordinator
+    public abstract class Coordinator : MarshalByRefObject, ICoordinator
     {
         private int currentTxid = 0;
         private Dictionary<int, List<ParticipantProxy>> transactions = new Dictionary<int, List<ParticipantProxy>>();

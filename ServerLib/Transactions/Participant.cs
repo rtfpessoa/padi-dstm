@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace ServerLib.Transactions
 {
-    public abstract class Participant : IParticipant
+    public abstract class Participant : MarshalByRefObject, IParticipant
     {
         private IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
 

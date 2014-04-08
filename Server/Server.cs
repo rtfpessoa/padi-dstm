@@ -1,6 +1,7 @@
 ﻿using CommonTypes;
 using ServerLib.Storage;
 using ServerLib.Transactions;
+using System;
 
 namespace Server
 {
@@ -11,9 +12,12 @@ namespace Server
         {
         }
 
-        public bool Status()
+        public string Status()
         {
-            return true;
+            Console.WriteLine("[ServerStatus] Entering/Exiting Status");
+            
+            /* No futuro deve ir buscar o status do servidor ("OK", "Freeze", "Fail") */
+            return "OK";
         }
 
         public bool Fail()

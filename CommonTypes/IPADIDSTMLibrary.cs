@@ -48,7 +48,8 @@
         bool Freeze(string URL);
 
         /* Makes the server at URL recover from a previous
-         * Fail or Freeze call.         */
+         * Fail or Freeze call.
+         */
 
         bool Recover(string URL);
 
