@@ -10,7 +10,7 @@ namespace Server
 {
     internal class Server : Participant, IServer
     {
-        private int _serverId;
+        private readonly int _serverId;
 
         protected override int serverId
         {
@@ -20,12 +20,13 @@ namespace Server
             }
         }
 
-        private static IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
+        private readonly IMainServer mainServer;
 
-        public Server()
+        public Server(int serverId, IMainServer mainServer)
             : base((ICoordinator)mainServer, new KeyValueStorage())
         {
-            _serverId = mainServer.AddServer();
+            _serverId = serverId;
+            this.mainServer = mainServer;
 
             TcpChannel channelServ = new TcpChannel(Config.GetServerPort(serverId));
             ChannelServices.RegisterChannel(channelServ, true);

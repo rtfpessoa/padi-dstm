@@ -1,8 +1,8 @@
-﻿using System;
+﻿using CommonTypes;
+using System;
 using System.Collections.Generic;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
-using CommonTypes;
 
 namespace PADI_DSTM
 {
@@ -35,7 +35,7 @@ namespace PADI_DSTM
             try
             {
                 /* 1. Tem de ser criada a ligação com o servidor principal */
-                var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.REMOTE_MAINSERVER_URL);
+                var mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
 
                 /* 2. Temos que obter a list de servidores do sistema dada pelo MS */
                 _serverList = mainServer.ListServers();
@@ -66,7 +66,7 @@ namespace PADI_DSTM
             try
             {
                 /* 1. Tem de ser criada a ligação com o servidor principal (Duvida: todas as transacoes vao primeiro ao main server certo) */
-                var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.REMOTE_MAINSERVER_URL);
+                var mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
 
                 /* 2. Chamar o metodo do servidor que dá inicio a transação */
                 _currentTxInt = mainServer.StartTransaction();
@@ -95,7 +95,7 @@ namespace PADI_DSTM
             try
             {
                 /* 1. Tem de ser criada a ligação com o servidor principal (Duvida: todas as transacoes vao primeiro ao main server certo) */
-                var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.REMOTE_MAINSERVER_URL);
+                var mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
 
                 /* 2. Chamar o metodo do servidor que dá inicio ao commit da transação */
                 mainServer.CommitTransaction(_currentTxInt);
@@ -121,7 +121,7 @@ namespace PADI_DSTM
             try
             {
                 /* 1. Tem de ser criada a ligação com o servidor principal (Duvida: todas as transacoes vao primeiro ao main server certo) */
-                var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.REMOTE_MAINSERVER_URL);
+                var mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
 
                 /* 2. Chamar o metodo do servidor que dá inicio ao commit da transação */
                 mainServer.AbortTransaction(_currentTxInt);
@@ -150,7 +150,7 @@ namespace PADI_DSTM
             try
             {
                 /* 1. Tem de ser criada a ligação com o servidor principal */
-                var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.REMOTE_MAINSERVER_URL);
+                var mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
 
                 /* 2. Temos que obter a list dos status dos servidores */
                 bool ex = mainServer.getServerStatus();
@@ -181,7 +181,7 @@ namespace PADI_DSTM
             try
             {
                 /* 1. Deverá ser criada uma connecção com o servidor indicado no "url" */
-                var server = (IServer) Activator.GetObject(typeof (IServer), url);
+                var server = (IServer)Activator.GetObject(typeof(IServer), url);
 
                 /* 2. Chamar metodo presente nele que congela ele proprio */
                 fail = server.Fail();
@@ -212,7 +212,7 @@ namespace PADI_DSTM
             try
             {
                 /* 1. Deverá ser criada uma connecção com o servidor indicado no "url" */
-                var server = (IServer) Activator.GetObject(typeof (IServer), url);
+                var server = (IServer)Activator.GetObject(typeof(IServer), url);
 
                 /* 2. Chamar metodo presente nele que congela ele proprio */
                 freeze = server.Freeze();
@@ -240,7 +240,7 @@ namespace PADI_DSTM
             try
             {
                 /* 1. Deverá ser criada uma connecção com o servidor indicado no "url" */
-                var server = (IServer) Activator.GetObject(typeof (IServer), url);
+                var server = (IServer)Activator.GetObject(typeof(IServer), url);
 
                 /* 2. Chamar metodo presente nele que renicia-o */
                 recover = server.Recover();
@@ -310,11 +310,11 @@ namespace PADI_DSTM
 
         private static PadInt GetPadInt(int uid)
         {
-            int serverNum = uid%_serverList.Count;
+            int serverNum = uid % _serverList.Count;
             int serverId = _serverList.ToArray()[serverNum];
             string serverUrl = Config.GetServerUrl(serverId);
 
-            var server = (IServer) Activator.GetObject(typeof (IServer), serverUrl);
+            var server = (IServer)Activator.GetObject(typeof(IServer), serverUrl);
 
             return new PadInt(_currentTxInt, uid, server);
         }

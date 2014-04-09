@@ -7,6 +7,10 @@ namespace ClientConsole
     {
         private static void Main(string[] args)
         {
+            new TransactionsTests().run();
+
+            ///
+
             bool res;
 
             PadiDstm.Init();

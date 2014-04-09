@@ -11,9 +11,9 @@ namespace MainServer
     {
         private static void Main(string[] args)
         {
-            TcpChannel channelServ = new TcpChannel(Config.REMOTE_MAINSERVER_PORT);
+            TcpChannel channelServ = new TcpChannel(Config.RemoteMainserverPort);
             ChannelServices.RegisterChannel(channelServ, true);
-            RemotingConfiguration.RegisterWellKnownServiceType(typeof(MainServer), Config.REMOTE_MAINSERVER_OBJ_NAME, WellKnownObjectMode.Singleton);
+            RemotingConfiguration.RegisterWellKnownServiceType(typeof(MainServer), Config.RemoteMainserverObjName, WellKnownObjectMode.Singleton);
 
             Console.WriteLine("Press <enter> to exit");
             Console.ReadLine();
