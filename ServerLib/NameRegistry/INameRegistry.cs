@@ -4,10 +4,10 @@ namespace ServerLib.NameRegistry
 {
     public interface INameRegistry
     {
-        int AddServer(string endpoint);
+        int AddServer();
 
         void RemoveServer(int uid);
 
-        Dictionary<int, string> ListServers();
+        List<int> ListServers();
     }
 }

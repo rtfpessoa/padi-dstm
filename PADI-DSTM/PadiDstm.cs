@@ -15,7 +15,7 @@ namespace PADI_DSTM
         /* Variavel com o identificador da transacao actual */
         private static int currentTxInt;
         /* Variavel com a lista de servidores */
-        private static List<string> serverList = new List<string>();
+        private static List<int> serverList = new List<int>();
 
         /*
 * INTERACTION WITH SERVERS
@@ -38,7 +38,7 @@ namespace PADI_DSTM
                 IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
 
                 /* 2. Temos que obter a list de servidores do sistema dada pelo MS */
-                serverList.AddRange(mainServer.ListServers().Values);
+                serverList = mainServer.ListServers();
 
                 /* DEBUG PROPOSES*/
                 for (int i = 0; i < serverList.Count; i++)

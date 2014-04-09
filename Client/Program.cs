@@ -21,7 +21,7 @@ namespace Client
             ChannelServices.RegisterChannel(channelServ, true);
 
             IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
-            IServer server = (IServer)Activator.GetObject(typeof(IServer), Config.REMOTE_SERVER_URL);
+            IServer server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(0));
 
             int txid1 = mainServer.StartTransaction();
             int txid2 = mainServer.StartTransaction();

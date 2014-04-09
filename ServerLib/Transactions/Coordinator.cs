@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CommonTypes;
+using System;
 using System.Collections.Generic;
 
 namespace ServerLib.Transactions
@@ -26,7 +27,7 @@ namespace ServerLib.Transactions
          * Adds participant to distributed transaction
          */
 
-        public void JoinTransaction(int txid, string endpoint)
+        public void JoinTransaction(int txid, int serverId)
         {
             List<ParticipantProxy> participants;
 
@@ -35,10 +36,10 @@ namespace ServerLib.Transactions
                 participants = new List<ParticipantProxy>();
             }
 
-            ParticipantProxy participant = new ParticipantProxy(endpoint);
+            ParticipantProxy participant = new ParticipantProxy(Config.GetServerUrl(serverId));
             participants.Add(participant);
 
-            Console.WriteLine("Server {0} joined to transaction {1}", endpoint, txid);
+            Console.WriteLine("Server {0} joined to transaction {1}", serverId, txid);
         }
 
         /**

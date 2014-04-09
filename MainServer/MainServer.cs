@@ -7,13 +7,13 @@ namespace MainServer
 {
     internal class MainServer : Coordinator, IMainServer, INameRegistry
     {
-        private int serverUidGenerator = Config.REMOTE_SERVER_PORT;
-        private Dictionary<int, string> registry = new Dictionary<int, string>();
+        private int serverUidGenerator = 0;
+        private List<int> registry = new List<int>();
 
-        public int AddServer(string endpoint)
+        public int AddServer()
         {
             int uid = serverUidGenerator++;
-            registry.Add(uid, endpoint);
+            registry.Add(uid);
             return uid;
         }
 
@@ -22,7 +22,7 @@ namespace MainServer
             registry.Remove(uid);
         }
 
-        public Dictionary<int, string> ListServers()
+        public List<int> ListServers()
         {
             return registry;
         }

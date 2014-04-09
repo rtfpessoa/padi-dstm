@@ -8,6 +8,8 @@ namespace ServerLib.Transactions
 {
     public abstract class Participant : MarshalByRefObject, IParticipant
     {
+        protected abstract int serverId { get; }
+
         private ICoordinator coordinator;
         private IStorage storage;
 
@@ -232,7 +234,7 @@ namespace ServerLib.Transactions
                 txWriteSet.Add(txid, new HashSet<int>());
 
                 startTxids.Add(txid, biggestCommitedTxid);
-                coordinator.JoinTransaction(txid, Config.REMOTE_SERVER_URL);
+                coordinator.JoinTransaction(txid, serverId);
             }
         }
     }

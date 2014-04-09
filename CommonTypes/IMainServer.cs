@@ -6,7 +6,7 @@ namespace CommonTypes
     {
         int StartTransaction();
 
-        void JoinTransaction(int txid, string endpoint);
+        void JoinTransaction(int txid, int serverId);
 
         /// <exception cref="TxException"></exception>
         void CommitTransaction(int txid);
@@ -14,7 +14,11 @@ namespace CommonTypes
         /// <exception cref="TxException"></exception>
         void AbortTransaction(int txid);
 
-        Dictionary<int, string> ListServers();
+        int AddServer();
+
+        void RemoveServer(int serverId);
+
+        List<int> ListServers();
 
         /* Function to give to the client the all Server Status */
 
