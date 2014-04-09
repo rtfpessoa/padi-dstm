@@ -1,13 +1,15 @@
-﻿using CommonTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using CommonTypes;
 
 namespace ServerLib.Transactions
 {
     public abstract class Coordinator : MarshalByRefObject, ICoordinator
     {
-        private int currentTxid = 0;
-        private Dictionary<int, List<ParticipantProxy>> transactions = new Dictionary<int, List<ParticipantProxy>>();
+        private readonly Dictionary<int, List<ParticipantProxy>> transactions =
+            new Dictionary<int, List<ParticipantProxy>>();
+
+        private int currentTxid;
 
         /**
          * Creates a new random global transaction id
@@ -36,7 +38,7 @@ namespace ServerLib.Transactions
                 participants = new List<ParticipantProxy>();
             }
 
-            ParticipantProxy participant = new ParticipantProxy(Config.GetServerUrl(serverId));
+            var participant = new ParticipantProxy(Config.GetServerUrl(serverId));
             participants.Add(participant);
 
             Console.WriteLine("Server {0} joined to transaction {1}", serverId, txid);
@@ -45,52 +47,6 @@ namespace ServerLib.Transactions
         /**
          * Check if participant is ready to commit.
          */
-
-        private void PrepareTransaction(int txid)
-        {
-            List<ParticipantProxy> participants;
-
-            transactions.TryGetValue(txid, out participants);
-
-            foreach (ParticipantProxy participant in participants)
-            {
-                IParticipant proxy = participant.GetProxy();
-                try
-                {
-                    proxy.PrepareTransaction(txid);
-                    participant.readyToCommit = true;
-
-                    Console.WriteLine("{0} prepared for transaction {1}", participant.endpoint, txid);
-                }
-                catch (TxException ex)
-                {
-                    participant.readyToCommit = false;
-
-                    Console.WriteLine("{0} failed to prepare transaction {1}", participant.endpoint, txid);
-                    Console.WriteLine(ex.ToString());
-                }
-            }
-        }
-
-        /**
-         * Checks if all registered participants in the distributed transaction are ready to
-         * commit.
-         */
-
-        private bool IsReadyToCommit(int txid)
-        {
-            bool result = true;
-            List<ParticipantProxy> participants;
-
-            transactions.TryGetValue(txid, out participants);
-
-            foreach (ParticipantProxy participant in participants)
-            {
-                result &= participant.readyToCommit;
-            }
-
-            return result;
-        }
 
         /**
          * Commits if all participants are ready to commit. Otherwise aborts.
@@ -145,7 +101,7 @@ namespace ServerLib.Transactions
 
             transactions.TryGetValue(txid, out participants);
 
-            Queue<ParticipantProxy> pending = new Queue<ParticipantProxy>(participants);
+            var pending = new Queue<ParticipantProxy>(participants);
 
             while (pending.Count > 0)
             {
@@ -156,6 +112,52 @@ namespace ServerLib.Transactions
                     pending.Enqueue(proxy);
                 }
             }
+        }
+
+        private void PrepareTransaction(int txid)
+        {
+            List<ParticipantProxy> participants;
+
+            transactions.TryGetValue(txid, out participants);
+
+            foreach (ParticipantProxy participant in participants)
+            {
+                IParticipant proxy = participant.GetProxy();
+                try
+                {
+                    proxy.PrepareTransaction(txid);
+                    participant.readyToCommit = true;
+
+                    Console.WriteLine("{0} prepared for transaction {1}", participant.endpoint, txid);
+                }
+                catch (TxException ex)
+                {
+                    participant.readyToCommit = false;
+
+                    Console.WriteLine("{0} failed to prepare transaction {1}", participant.endpoint, txid);
+                    Console.WriteLine(ex.ToString());
+                }
+            }
+        }
+
+        /**
+         * Checks if all registered participants in the distributed transaction are ready to
+         * commit.
+         */
+
+        private bool IsReadyToCommit(int txid)
+        {
+            bool result = true;
+            List<ParticipantProxy> participants;
+
+            transactions.TryGetValue(txid, out participants);
+
+            foreach (ParticipantProxy participant in participants)
+            {
+                result &= participant.readyToCommit;
+            }
+
+            return result;
         }
 
         private bool AbortTransactionForParticipant(int txid, ParticipantProxy participant)

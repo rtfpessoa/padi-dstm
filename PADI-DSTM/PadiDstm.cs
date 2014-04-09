@@ -1,33 +1,33 @@
-﻿using CommonTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
+using CommonTypes;
 
 namespace PADI_DSTM
 {
     /*
-* Lib created to be linked to every client application that uses PADI-DSTM
-*/
+     * Lib created to be linked to every client application that uses PADI-DSTM
+     */
 
     public class PadiDstm
     {
         /* Variavel com o identificador da transacao actual */
-        private static int currentTxInt;
+        private static int _currentTxInt;
         /* Variavel com a lista de servidores */
-        private static List<int> serverList = new List<int>();
+        private static List<int> _serverList = new List<int>();
 
         /*
-* INTERACTION WITH SERVERS
-*/
+         * INTERACTION WITH SERVERS
+         */
 
         /*
-* This method is called only once by the application and initializaes de PADI-DSTM library
-*/
+         * This method is called only once by the application and initializaes de PADI-DSTM library
+         */
 
         public static bool Init()
         {
-            TcpChannel channelServ = new TcpChannel();
+            var channelServ = new TcpChannel();
             ChannelServices.RegisterChannel(channelServ, true);
 
             Console.WriteLine("[Client.Init] Entering Client.Init");
@@ -35,15 +35,15 @@ namespace PADI_DSTM
             try
             {
                 /* 1. Tem de ser criada a ligação com o servidor principal */
-                IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
+                var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.REMOTE_MAINSERVER_URL);
 
                 /* 2. Temos que obter a list de servidores do sistema dada pelo MS */
-                serverList = mainServer.ListServers();
+                _serverList = mainServer.ListServers();
 
                 /* DEBUG PROPOSES*/
-                for (int i = 0; i < serverList.Count; i++)
+                for (int i = 0; i < _serverList.Count; i++)
                 {
-                    Console.WriteLine("[Client.Init] Server {0}: {1}", i, serverList[i]);
+                    Console.WriteLine("[Client.Init] Server {0}: {1}", i, _serverList[i]);
                 }
             }
             catch (Exception e)
@@ -56,9 +56,9 @@ namespace PADI_DSTM
         }
 
         /*
-* This method starts a new transaction and returns a boolean value indicating whether the
-* operation succeeded. This method may throw a TxException
-*/
+         * This method starts a new transaction and returns a boolean value indicating whether the
+         * operation succeeded. This method may throw a TxException
+         */
 
         public static bool TxBegin()
         {
@@ -66,13 +66,13 @@ namespace PADI_DSTM
             try
             {
                 /* 1. Tem de ser criada a ligação com o servidor principal (Duvida: todas as transacoes vao primeiro ao main server certo) */
-                IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
+                var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.REMOTE_MAINSERVER_URL);
 
                 /* 2. Chamar o metodo do servidor que dá inicio a transação */
-                currentTxInt = mainServer.StartTransaction();
+                _currentTxInt = mainServer.StartTransaction();
 
                 /* DEBUG PROPOSES */
-                Console.WriteLine("[Client.TxBegin] txInt: {0}", currentTxInt);
+                Console.WriteLine("[Client.TxBegin] txInt: {0}", _currentTxInt);
             }
             catch (Exception e)
             {
@@ -84,9 +84,9 @@ namespace PADI_DSTM
         }
 
         /*
-* This method attempts to commit the current transaction and returns a boolean value
-* indicating whether the operation succeded. This method may throw a TxException
-*/
+         * This method attempts to commit the current transaction and returns a boolean value
+         * indicating whether the operation succeded. This method may throw a TxException
+         */
 
         public static bool TxCommit()
         {
@@ -95,10 +95,10 @@ namespace PADI_DSTM
             try
             {
                 /* 1. Tem de ser criada a ligação com o servidor principal (Duvida: todas as transacoes vao primeiro ao main server certo) */
-                IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
+                var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.REMOTE_MAINSERVER_URL);
 
                 /* 2. Chamar o metodo do servidor que dá inicio ao commit da transação */
-                mainServer.CommitTransaction(currentTxInt);
+                mainServer.CommitTransaction(_currentTxInt);
             }
             catch (Exception e)
             {
@@ -110,9 +110,9 @@ namespace PADI_DSTM
         }
 
         /*
-* This method aborts the current transaction and returns a boolean value indicating
-* whether the operation succeeded. This method may throw a TxException
-*/
+         * This method aborts the current transaction and returns a boolean value indicating
+         * whether the operation succeeded. This method may throw a TxException
+         */
 
         public static bool TxAbort()
         {
@@ -121,10 +121,10 @@ namespace PADI_DSTM
             try
             {
                 /* 1. Tem de ser criada a ligação com o servidor principal (Duvida: todas as transacoes vao primeiro ao main server certo) */
-                IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
+                var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.REMOTE_MAINSERVER_URL);
 
                 /* 2. Chamar o metodo do servidor que dá inicio ao commit da transação */
-                mainServer.AbortTransaction(currentTxInt);
+                mainServer.AbortTransaction(_currentTxInt);
             }
             catch (Exception e)
             {
@@ -136,21 +136,21 @@ namespace PADI_DSTM
         }
 
         /*
-* This method makes all nodes in the system dump to their output their current state
-*/
+         * This method makes all nodes in the system dump to their output their current state
+         */
 
         public static bool Status()
         {
             /* Se não se pode enviar a lista de Servers que o cliente já conhece à priori (devido ao Init()) a
-* melhor solução será pedir ao Main Server que por sua vez vai perguntar a todos os servidores
-* conhecidos qual o seu estado */
+             * melhor solução será pedir ao Main Server que por sua vez vai perguntar a todos os servidores
+             * conhecidos qual o seu estado */
 
             Console.WriteLine("[Client.Status] Entering Status");
 
             try
             {
                 /* 1. Tem de ser criada a ligação com o servidor principal */
-                IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
+                var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.REMOTE_MAINSERVER_URL);
 
                 /* 2. Temos que obter a list dos status dos servidores */
                 bool ex = mainServer.getServerStatus();
@@ -168,20 +168,20 @@ namespace PADI_DSTM
         }
 
         /*
-* This method makes the server at the URL stop responding to external calls except for
-* a Recover call
-*/
+         * This method makes the server at the URL stop responding to external calls except for
+         * a Recover call
+         */
 
         public static bool Fail(String url)
         {
             Console.WriteLine("[Client.Fail] Entering Fail");
 
-            bool fail = false;
+            bool fail;
 
             try
             {
                 /* 1. Deverá ser criada uma connecção com o servidor indicado no "url" */
-                IServer server = (IServer)Activator.GetObject(typeof(IServer), url);
+                var server = (IServer) Activator.GetObject(typeof (IServer), url);
 
                 /* 2. Chamar metodo presente nele que congela ele proprio */
                 fail = server.Fail();
@@ -196,23 +196,23 @@ namespace PADI_DSTM
         }
 
         /*
-* This method makes the server at URL stop responding to external calls but it
-* maintains all calls for later reply, as if the communication to that server were
-* only delayed. A server in freeze mode responds immediately only to a Recover
-* call (see below), which triggers the execution of the backlog of operations
-* accumulated since the Freeze call
-*/
+         * This method makes the server at URL stop responding to external calls but it
+         * maintains all calls for later reply, as if the communication to that server were
+         * only delayed. A server in freeze mode responds immediately only to a Recover
+         * call (see below), which triggers the execution of the backlog of operations
+         * accumulated since the Freeze call
+         */
 
         public static bool Freeze(String url)
         {
             Console.WriteLine("[Client.Freeze] Entering Freeze");
 
-            bool freeze = false;
+            bool freeze;
 
             try
             {
                 /* 1. Deverá ser criada uma connecção com o servidor indicado no "url" */
-                IServer server = (IServer)Activator.GetObject(typeof(IServer), url);
+                var server = (IServer) Activator.GetObject(typeof (IServer), url);
 
                 /* 2. Chamar metodo presente nele que congela ele proprio */
                 freeze = server.Freeze();
@@ -235,12 +235,12 @@ namespace PADI_DSTM
         {
             Console.WriteLine("[Client.Recover] Entering Recover");
 
-            bool recover = false;
+            bool recover;
 
             try
             {
                 /* 1. Deverá ser criada uma connecção com o servidor indicado no "url" */
-                IServer server = (IServer)Activator.GetObject(typeof(IServer), url);
+                var server = (IServer) Activator.GetObject(typeof (IServer), url);
 
                 /* 2. Chamar metodo presente nele que renicia-o */
                 recover = server.Recover();
@@ -255,70 +255,50 @@ namespace PADI_DSTM
         }
 
         /*
-* INTERACTION WITH SHARED DISTRIBUTED OBJECTS (PADINT)
-*/
+         * INTERACTION WITH SHARED DISTRIBUTED OBJECTS (PADINT)
+         */
 
         /*
-* This method creates a new shared object with the given uid. Returns null if
-* the object already exists
-*/
+         * This method creates a new shared object with the given uid. Returns null if
+         * the object already exists
+         */
 
         public static PadInt CreatePadInt(int uid)
         {
             Console.WriteLine("[Client.CreatePadInt] Entering AccessPadInt");
-
-            /* 1. Deverá ser feita a ligação ao servidor que pode ter o objecto (sabe-se isso através
-            * da lista de servidores dada pelo Init() e pelo algoritmo de sharding implementado)
-            */
-            int serverNum = uid % serverList.Count;
-            int serverId = serverList.ToArray()[serverNum];
-            string serverURL = Config.GetServerUrl(serverId);
 
             PadInt newPadInt = null;
 
             /* 2. Verificar se o tem e caso n tiver, cria-lo e retorna-o; caso ja exista retorna null */
             try
             {
-                /* 1. Deverá ser criada uma connecção com o servidor descoberto pelo uid */
-                IServer server = (IServer)Activator.GetObject(typeof(IServer), serverURL);
-
-                /* 2. Chamar metodo presente nele para criar o PadInt (caso possa) e devolve-lo caso exista ou retornar null [a implementar no servers] */
-                /*newPadInt = server.createNewPadInt();*/
+                newPadInt = GetPadInt(uid);
+                newPadInt.Read(); // If it reads the padint is already created
             }
             catch (Exception e)
             {
                 Console.WriteLine("[Client.CreatePadInt] Exception : {0}", e.StackTrace);
-                return null;
+                return newPadInt;
             }
-            return newPadInt;
+            return null;
         }
 
         /*
-* This method returns a reference to a shared object with the given uid. Returns
-* null if the object does not exist already
-*/
+         * This method returns a reference to a shared object with the given uid. Returns
+         * null if the object does not exist already
+         */
 
         public static PadInt AccessPadInt(int uid)
         {
             Console.WriteLine("[Client.AccessPadInt] Entering AccessPadInt");
 
-            /* 1. Deverá ser feita a ligação ao servidor que pode ter o objecto (sabe-se isso através
-            * da lista de servidores dada pelo Init() e pelo algoritmo de sharding implementado)
-            */
-            int serverNum = uid % serverList.Count;
-            int serverId = serverList.ToArray()[serverNum];
-            string serverURL = Config.GetServerUrl(serverId);
-
-            PadInt accPadInt = null;
+            PadInt accPadInt;
 
             /* 2. Verificar se o tem e caso o tiver, devolve-lo; caso n tiver retornar null */
             try
             {
-                /* 1. Deverá ser criada uma connecção com o servidor descoberto pelo uid */
-                IServer server = (IServer)Activator.GetObject(typeof(IServer), serverURL);
-
-                /* 2. Chamar metodo presente nele para aceder ao PadInt (caso possa) e devolve-lo [a implementar no servers] ; caso contrario retornar null */
-                /*accPadInt = server.accessPadInt();*/
+                accPadInt = GetPadInt(uid);
+                accPadInt.Read(); // If it doesn't read the padint doesn't exist
             }
             catch (Exception e)
             {
@@ -326,6 +306,17 @@ namespace PADI_DSTM
                 return null;
             }
             return accPadInt;
+        }
+
+        private static PadInt GetPadInt(int uid)
+        {
+            int serverNum = uid%_serverList.Count;
+            int serverId = _serverList.ToArray()[serverNum];
+            string serverUrl = Config.GetServerUrl(serverId);
+
+            var server = (IServer) Activator.GetObject(typeof (IServer), serverUrl);
+
+            return new PadInt(_currentTxInt, uid, server);
         }
     }
 }

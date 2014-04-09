@@ -1,31 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CommonTypes;
+﻿using CommonTypes;
 
 namespace PADI_DSTM
 {
     public class PadInt : IPadInt
     {
-        private readonly int uid;
         private readonly IServer server;
+        private readonly int txid;
+        private readonly int uid;
 
-        public PadInt(int uid, IServer server)
+        public PadInt(int txid, int uid, IServer server)
         {
+            this.txid = txid;
             this.uid = uid;
             this.server = server;
         }
 
         public int Read()
         {
-            throw new NotImplementedException();
+            return server.ReadValue(txid, uid);
         }
 
         public void Write(int value)
         {
-            throw new NotImplementedException();
+            server.WriteValue(txid, uid, value);
         }
     }
 }

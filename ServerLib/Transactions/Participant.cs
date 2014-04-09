@@ -1,31 +1,91 @@
-﻿using ServerLib.Storage;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ServerLib.Storage;
 
 namespace ServerLib.Transactions
 {
     public abstract class Participant : MarshalByRefObject, IParticipant
     {
-        protected abstract int serverId { get; }
+        private readonly ICoordinator coordinator;
+        private readonly HashSet<int> padIntLocks = new HashSet<int>();
+        private readonly Dictionary<int, int> startTxids = new Dictionary<int, int>();
+        private readonly IStorage storage;
+        private readonly Dictionary<int, Dictionary<int, int>> txPadInts = new Dictionary<int, Dictionary<int, int>>();
 
-        private ICoordinator coordinator;
-        private IStorage storage;
+        private readonly Dictionary<int, HashSet<int>> txReadSet = new Dictionary<int, HashSet<int>>();
+        private readonly Dictionary<int, HashSet<int>> txWriteSet = new Dictionary<int, HashSet<int>>();
 
-        private Dictionary<int, HashSet<int>> txReadSet = new Dictionary<int, HashSet<int>>();
-        private Dictionary<int, HashSet<int>> txWriteSet = new Dictionary<int, HashSet<int>>();
-
-        private Dictionary<int, Dictionary<int, int>> txPadInts = new Dictionary<int, Dictionary<int, int>>();
-
-        private HashSet<int> padIntLocks = new HashSet<int>();
-
-        private int biggestCommitedTxid = 0;
-        private Dictionary<int, int> startTxids = new Dictionary<int, int>();
+        private int biggestCommitedTxid;
 
         public Participant(ICoordinator coordinator, IStorage storage)
         {
             this.coordinator = coordinator;
             this.storage = storage;
+        }
+
+        protected abstract int serverId { get; }
+
+        public void PrepareTransaction(int txid)
+        {
+            if (!isReadOnlyTx(txid))
+            {
+                foreach (int padInt in txWriteSet[txid])
+                {
+                    if (!padIntLocks.Contains(padInt))
+                    {
+                        padIntLocks.Add(padInt);
+                    }
+                    else
+                    {
+                        throw new TxException();
+                    }
+                }
+
+                if (readOtherWrites(txid))
+                {
+                    foreach (int padInt in txWriteSet[txid])
+                    {
+                        padIntLocks.Remove(padInt);
+                    }
+
+                    throw new TxException();
+                }
+
+                HashSet<int> conflicts = writeOtherReads(txid);
+                foreach (int conflict in conflicts)
+                {
+                    // TODO: Abort transaction `conflict`
+                }
+            }
+        }
+
+        public void CommitTransaction(int txid)
+        {
+            if (!isReadOnlyTx(txid))
+            {
+                foreach (var padint in txPadInts[txid])
+                {
+                    storage.WriteValue(padint.Key, padint.Value);
+                }
+            }
+
+            foreach (int padInt in txWriteSet[txid])
+            {
+                padIntLocks.Remove(padInt);
+            }
+
+            if (biggestCommitedTxid < txid)
+            {
+                biggestCommitedTxid = txid;
+            }
+
+            clean(txid);
+        }
+
+        public void AbortTransaction(int txid)
+        {
+            clean(txid, true);
         }
 
         public int ReadValue(int txid, int key)
@@ -76,68 +136,6 @@ namespace ServerLib.Transactions
             storage.WriteValue(key, value);
 
             Console.WriteLine("Tx {0} wrote the PadInt {1} with value {2}", txid, key, value);
-        }
-
-        public void PrepareTransaction(int txid)
-        {
-            if (!isReadOnlyTx(txid))
-            {
-                foreach (int padInt in txWriteSet[txid])
-                {
-                    if (!padIntLocks.Contains(padInt))
-                    {
-                        padIntLocks.Add(padInt);
-                    }
-                    else
-                    {
-                        throw new TxException();
-                    }
-                }
-
-                if (readOtherWrites(txid))
-                {
-                    foreach (int padInt in txWriteSet[txid])
-                    {
-                        padIntLocks.Remove(padInt);
-                    }
-
-                    throw new TxException();
-                }
-
-                HashSet<int> conflicts = writeOtherReads(txid);
-                foreach (int conflict in conflicts)
-                {
-                    // TODO: Abort transaction `conflict`
-                }
-            }
-        }
-
-        public void CommitTransaction(int txid)
-        {
-            if (!isReadOnlyTx(txid))
-            {
-                foreach (KeyValuePair<int, int> padint in txPadInts[txid])
-                {
-                    storage.WriteValue(padint.Key, padint.Value);
-                }
-            }
-
-            foreach (int padInt in txWriteSet[txid])
-            {
-                padIntLocks.Remove(padInt);
-            }
-
-            if (biggestCommitedTxid < txid)
-            {
-                biggestCommitedTxid = txid;
-            }
-
-            clean(txid);
-        }
-
-        public void AbortTransaction(int txid)
-        {
-            clean(txid, true);
         }
 
         /*
@@ -194,8 +192,8 @@ namespace ServerLib.Transactions
             HashSet<int> writes;
             txWriteSet.TryGetValue(txid, out writes);
 
-            HashSet<int> conflicts = new HashSet<int>();
-            foreach (KeyValuePair<int, HashSet<int>> overlapTx in txReadSet)
+            var conflicts = new HashSet<int>();
+            foreach (var overlapTx in txReadSet)
             {
                 if (overlapTx.Key != txid && overlapTx.Value.Intersect(writes).Any())
                 {

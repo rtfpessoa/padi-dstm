@@ -4,7 +4,7 @@ namespace ServerLib.Storage
 {
     public class KeyValueStorage : IStorage
     {
-        private Dictionary<int, int> keyStore = new Dictionary<int, int>();
+        private readonly Dictionary<int, int> keyStore = new Dictionary<int, int>();
 
         public int ReadValue(int key)
         {
