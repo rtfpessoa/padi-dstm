@@ -270,12 +270,32 @@ namespace PADI_DSTM
 
         public static PadInt CreatePadInt(int uid)
         {
+            Console.WriteLine("[Client.CreatePadInt] Entering AccessPadInt");
+
             /* 1. Deverá ser feita a ligação ao servidor que pode ter o objecto (sabe-se isso através
-* da lista de servidores dada pelo Init() e pelo algoritmo de sharding implementado)
-*/
-            /* 2. Verificar se n tem e caso n tiver, cria-lo */
-            /* Duvida? Como sabemos o que é um objecto PadInt? Criamos a classe onde?*/
-            return null;
+            * da lista de servidores dada pelo Init() e pelo algoritmo de sharding implementado)
+            */
+            int serverNum = uid % serverList.Count;
+            string[] servers = serverList.ToArray();
+            string serverURL = servers[serverNum];
+
+            PadInt newPadInt = null;
+
+            /* 2. Verificar se o tem e caso n tiver, cria-lo e retorna-o; caso ja exista retorna null */
+            try
+            {
+                /* 1. Deverá ser criada uma connecção com o servidor descoberto pelo uid */
+                IServer server = (IServer)Activator.GetObject(typeof(IServer), serverURL);
+
+                /* 2. Chamar metodo presente nele para criar o PadInt (caso possa) e devolve-lo caso exista ou retornar null [a implementar no servers] */
+                /*newPadInt = server.createNewPadInt();*/
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[Client.CreatePadInt] Exception : {0}", e.StackTrace);
+                return null;
+            }
+            return newPadInt;
         }
 
         /*
@@ -284,13 +304,33 @@ namespace PADI_DSTM
 */
 
         public static PadInt AccessPadInt(int uid)
-        {
+        {            
+            Console.WriteLine("[Client.AccessPadInt] Entering AccessPadInt");
+
             /* 1. Deverá ser feita a ligação ao servidor que pode ter o objecto (sabe-se isso através
-* da lista de servidores dada pelo Init() e pelo algoritmo de sharding implementado)
-*/
-            /* 2. Verificar se o tem e caso tiver, returnar uma referencia para ele */
-            /* Duvida? Como sabemos o que é um objecto PadInt? Criamos a classe onde?*/
-            return null;
+            * da lista de servidores dada pelo Init() e pelo algoritmo de sharding implementado)
+            */
+            int serverNum = uid % serverList.Count;
+            string[] servers = serverList.ToArray();
+            string serverURL = servers[serverNum];
+
+            PadInt accPadInt = null;
+
+            /* 2. Verificar se o tem e caso o tiver, devolve-lo; caso n tiver retornar null */
+            try
+            {
+                /* 1. Deverá ser criada uma connecção com o servidor descoberto pelo uid */
+                IServer server = (IServer)Activator.GetObject(typeof(IServer), serverURL);
+
+                /* 2. Chamar metodo presente nele para aceder ao PadInt (caso possa) e devolve-lo [a implementar no servers] ; caso contrario retornar null */
+                /*accPadInt = server.accessPadInt();*/
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[Client.AccessPadInt] Exception : {0}", e.StackTrace);
+                return null;
+            }
+            return accPadInt;
         }
     }
 }
