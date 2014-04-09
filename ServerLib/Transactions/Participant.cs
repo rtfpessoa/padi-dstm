@@ -8,8 +8,7 @@ namespace ServerLib.Transactions
 {
     public abstract class Participant : MarshalByRefObject, IParticipant
     {
-        private IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
-
+        private ICoordinator coordinator;
         private IStorage storage;
 
         private Dictionary<int, HashSet<int>> txReadSet = new Dictionary<int, HashSet<int>>();
@@ -22,8 +21,9 @@ namespace ServerLib.Transactions
         private int biggestCommitedTxid = 0;
         private Dictionary<int, int> startTxids = new Dictionary<int, int>();
 
-        public Participant(IStorage storage)
+        public Participant(ICoordinator coordinator, IStorage storage)
         {
+            this.coordinator = coordinator;
             this.storage = storage;
         }
 
@@ -230,7 +230,7 @@ namespace ServerLib.Transactions
                 txWriteSet.Add(txid, new HashSet<int>());
                 
                 startTxids.Add(txid, biggestCommitedTxid);
-                mainServer.JoinTransaction(txid, Config.REMOTE_SERVER_URL);
+                coordinator.JoinTransaction(txid, Config.REMOTE_SERVER_URL);
             }
         }
     }

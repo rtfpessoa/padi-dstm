@@ -39,7 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="NameRegistry\INameRegistry.cs" />
     <Compile Include="Storage\IStorage.cs" />
     <Compile Include="Storage\Storage.cs" />
     <Compile Include="Transactions\Coordinator.cs" />

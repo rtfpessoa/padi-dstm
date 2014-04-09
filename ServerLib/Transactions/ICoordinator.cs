@@ -1,6 +1,6 @@
 ﻿namespace ServerLib.Transactions
 {
-    internal interface ICoordinator
+    public interface ICoordinator
     {
         int StartTransaction();
 

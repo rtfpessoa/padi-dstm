@@ -1,4 +1,6 @@
-﻿namespace CommonTypes
+﻿using System.Collections.Generic;
+
+namespace CommonTypes
 {
     public interface IMainServer
     {
@@ -12,10 +14,10 @@
         /// <exception cref="TxException"></exception>
         void AbortTransaction(int txid);
 
-        /* Function to give to the client the server list */
-        string[] getServerList();
+        Dictionary<int, string> ListServers();
 
         /* Function to give to the client the all Server Status */
+
         bool getServerStatus();
     }
 }

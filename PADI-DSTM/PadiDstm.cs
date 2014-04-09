@@ -1,25 +1,26 @@
 ﻿using CommonTypes;
-using System.Diagnostics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace PADI_DSTM
 {
     /*
 * Lib created to be linked to every client application that uses PADI-DSTM
 */
+
     public class PadiDstm
     {
         /* Variavel com o identificador da transacao actual */
         private static int currentTxInt;
         /* Variavel com a lista de servidores */
-        private static string[] serverList;
+        private static List<string> serverList = new List<string>();
 
         /*
 * INTERACTION WITH SERVERS
@@ -28,6 +29,7 @@ namespace PADI_DSTM
         /*
 * This method is called only once by the application and initializaes de PADI-DSTM library
 */
+
         public static bool Init()
         {
             TcpChannel channelServ = new TcpChannel();
@@ -41,10 +43,10 @@ namespace PADI_DSTM
                 IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
 
                 /* 2. Temos que obter a list de servidores do sistema dada pelo MS */
-                serverList = mainServer.getServerList();
+                serverList.AddRange(mainServer.ListServers().Values);
 
                 /* DEBUG PROPOSES*/
-                for (int i = 0; i < serverList.Length; i++)
+                for (int i = 0; i < serverList.Count; i++)
                 {
                     Console.WriteLine("[Client.Init] Server {0}: {1}", i, serverList[i]);
                 }
@@ -62,6 +64,7 @@ namespace PADI_DSTM
 * This method starts a new transaction and returns a boolean value indicating whether the
 * operation succeeded. This method may throw a TxException
 */
+
         public static bool TxBegin()
         {
             Console.WriteLine("[Client.TxBegin] Entering Client.TxBegin");
@@ -89,6 +92,7 @@ namespace PADI_DSTM
 * This method attempts to commit the current transaction and returns a boolean value
 * indicating whether the operation succeded. This method may throw a TxException
 */
+
         public static bool TxCommit()
         {
             /* 1. Chamar o metodo do servidor que dá inicio ao commit da transação */
@@ -114,6 +118,7 @@ namespace PADI_DSTM
 * This method aborts the current transaction and returns a boolean value indicating
 * whether the operation succeeded. This method may throw a TxException
 */
+
         public static bool TxAbort()
         {
             /* 1. Chamar o metodo do servidor que aborta current transação*/
@@ -138,6 +143,7 @@ namespace PADI_DSTM
         /*
 * This method makes all nodes in the system dump to their output their current state
 */
+
         public static bool Status()
         {
             /* Se não se pode enviar a lista de Servers que o cliente já conhece à priori (devido ao Init()) a
@@ -170,6 +176,7 @@ namespace PADI_DSTM
 * This method makes the server at the URL stop responding to external calls except for
 * a Recover call
 */
+
         public static bool Fail(String url)
         {
             Console.WriteLine("[Client.Fail] Entering Fail");
@@ -200,6 +207,7 @@ namespace PADI_DSTM
 * call (see below), which triggers the execution of the backlog of operations
 * accumulated since the Freeze call
 */
+
         public static bool Freeze(String url)
         {
             Console.WriteLine("[Client.Freeze] Entering Freeze");
@@ -227,6 +235,7 @@ namespace PADI_DSTM
 * This method creates a new shared object with the given uid. Returns null if the
 * object already exists.
 */
+
         public static bool Recover(String url)
         {
             Console.WriteLine("[Client.Recover] Entering Recover");
@@ -250,7 +259,6 @@ namespace PADI_DSTM
             return recover;
         }
 
-
         /*
 * INTERACTION WITH SHARED DISTRIBUTED OBJECTS (PADINT)
 */
@@ -259,6 +267,7 @@ namespace PADI_DSTM
 * This method creates a new shared object with the given uid. Returns null if
 * the object already exists
 */
+
         public static PadInt CreatePadInt(int uid)
         {
             /* 1. Deverá ser feita a ligação ao servidor que pode ter o objecto (sabe-se isso através
@@ -273,6 +282,7 @@ namespace PADI_DSTM
 * This method returns a reference to a shared object with the given uid. Returns
 * null if the object does not exist already
 */
+
         public static PadInt AccessPadInt(int uid)
         {
             /* 1. Deverá ser feita a ligação ao servidor que pode ter o objecto (sabe-se isso através

@@ -7,15 +7,17 @@ namespace Server
 {
     internal class Server : Participant, IServer
     {
+        private static IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
+
         public Server()
-            : base(new KeyValueStorage())
+            : base((ICoordinator)mainServer, new KeyValueStorage())
         {
         }
 
         public bool Status()
         {
             Console.WriteLine("[ServerStatus] Entering/Exiting Status");
-            
+
             /* No futuro deve ir buscar o status do servidor ("OK", "Freeze", "Fail") */
             return true;
         }

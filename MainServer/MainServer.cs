@@ -1,51 +1,34 @@
 ﻿using CommonTypes;
+using ServerLib.NameRegistry;
 using ServerLib.Transactions;
-using System;
-using System.IO;
 using System.Collections.Generic;
-
-
-using System.Runtime.Remoting;
-using System.Runtime.Remoting.Channels;
-using System.Runtime.Remoting.Channels.Tcp;
 
 namespace MainServer
 {
-    internal class MainServer : Coordinator, IMainServer
+    internal class MainServer : Coordinator, IMainServer, INameRegistry
     {
-        /* Give the Server List */
-        public string[] getServerList() {
+        private int serverUidGenerator = Config.REMOTE_SERVER_PORT;
+        private Dictionary<int, string> registry = new Dictionary<int, string>();
 
-            Console.WriteLine("[GetServerList] Entering GetServerList method");
+        public int AddServer(string endpoint)
+        {
+            int uid = serverUidGenerator++;
+            registry.Add(uid, endpoint);
+            return uid;
+        }
 
-            /* Create a string List because we don't know how much servers exist */
-            List<string> serversList = new List<string>();
+        public void RemoveServer(int uid)
+        {
+            registry.Remove(uid);
+        }
 
-            /* Try to red from file 'ServerList' */
-            try
-            {
-                using (StreamReader sr = new StreamReader("..\\..\\ServerList.txt"))
-                {
-                    String line;
-                    while ((line = sr.ReadLine()) != null) {
-                        serversList.Add(line);
-                        Console.WriteLine("[GetServerList] Read line {0} from ServerList.txt", line);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("The file could not be read:");
-                Console.WriteLine(e.Message);
-            }
-
-            Console.WriteLine("[GetServerList] Exiting GetServerList method");
-
-            /* Return a string array */
-            return serversList.ToArray();
+        public Dictionary<int, string> ListServers()
+        {
+            return registry;
         }
 
         /* Give the Server List */
+
         public bool getServerStatus()
         {
             return true;
