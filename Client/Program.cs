@@ -2,7 +2,6 @@
 using System;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
-using System.Windows.Forms;
 
 namespace Client
 {
@@ -23,7 +22,6 @@ namespace Client
 
             IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.REMOTE_MAINSERVER_URL);
             IServer server = (IServer)Activator.GetObject(typeof(IServer), Config.REMOTE_SERVER_URL);
-
 
             int txid1 = mainServer.StartTransaction();
             int txid2 = mainServer.StartTransaction();
