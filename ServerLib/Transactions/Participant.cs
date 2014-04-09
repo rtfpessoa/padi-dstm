@@ -94,6 +94,11 @@ namespace ServerLib.Transactions
 
             int value;
 
+            if (!storage.HasValue(key))
+            {
+                throw new NullReferenceException();
+            }
+
             if (!txReadSet.ContainsKey(txid))
             {
                 txReadSet[txid] = new HashSet<int>();

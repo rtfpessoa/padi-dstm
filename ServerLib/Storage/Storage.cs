@@ -19,5 +19,10 @@ namespace ServerLib.Storage
         {
             keyStore[key] = value;
         }
+
+        public bool HasValue(int key)
+        {
+            return keyStore.ContainsKey(key);
+        }
     }
 }

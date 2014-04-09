@@ -22,6 +22,7 @@ namespace ClientConsole
 
             int txid1 = mainServer.StartTransaction();
             int txid2 = mainServer.StartTransaction();
+            server.WriteValue(txid1, 1, 1);
             server.ReadValue(txid1, 1);
             server.WriteValue(txid1, 1, 10);
             server.ReadValue(txid2, 1);

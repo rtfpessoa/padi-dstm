@@ -274,6 +274,7 @@ namespace PADI_DSTM
             {
                 newPadInt = GetPadInt(uid);
                 newPadInt.Read(); // If it reads the padint is already created
+                newPadInt.Write(0); // Initialize PadInt
             }
             catch (Exception e)
             {
