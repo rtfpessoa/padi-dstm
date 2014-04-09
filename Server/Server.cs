@@ -30,7 +30,7 @@ namespace Server
 
             TcpChannel channelServ = new TcpChannel(Config.GetServerPort(serverId));
             ChannelServices.RegisterChannel(channelServ, true);
-            RemotingConfiguration.RegisterWellKnownServiceType(typeof(Server), Config.GetServerUrl(serverId), WellKnownObjectMode.Singleton);
+            RemotingConfiguration.RegisterWellKnownServiceType(typeof(Participant), Config.GetServerUrl(serverId), WellKnownObjectMode.Singleton);
         }
 
         public bool Status()
