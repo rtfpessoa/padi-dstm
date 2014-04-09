@@ -86,7 +86,9 @@ namespace ServerLib.Transactions
                     if (!padIntLocks.Contains(padInt))
                     {
                         padIntLocks.Add(padInt);
-                    } else {
+                    }
+                    else
+                    {
                         throw new TxException();
                     }
                 }
@@ -228,7 +230,7 @@ namespace ServerLib.Transactions
                 txPadInts.Add(txid, new Dictionary<int, int>());
                 txReadSet.Add(txid, new HashSet<int>());
                 txWriteSet.Add(txid, new HashSet<int>());
-                
+
                 startTxids.Add(txid, biggestCommitedTxid);
                 coordinator.JoinTransaction(txid, Config.REMOTE_SERVER_URL);
             }
