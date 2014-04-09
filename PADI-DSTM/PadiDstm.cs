@@ -271,8 +271,8 @@ namespace PADI_DSTM
             * da lista de servidores dada pelo Init() e pelo algoritmo de sharding implementado)
             */
             int serverNum = uid % serverList.Count;
-            string[] servers = serverList.ToArray();
-            string serverURL = servers[serverNum];
+            int serverId = serverList.ToArray()[serverNum];
+            string serverURL = Config.GetServerUrl(serverId);
 
             PadInt newPadInt = null;
 
@@ -299,15 +299,15 @@ namespace PADI_DSTM
 */
 
         public static PadInt AccessPadInt(int uid)
-        {            
+        {
             Console.WriteLine("[Client.AccessPadInt] Entering AccessPadInt");
 
             /* 1. Deverá ser feita a ligação ao servidor que pode ter o objecto (sabe-se isso através
             * da lista de servidores dada pelo Init() e pelo algoritmo de sharding implementado)
             */
             int serverNum = uid % serverList.Count;
-            string[] servers = serverList.ToArray();
-            string serverURL = servers[serverNum];
+            int serverId = serverList.ToArray()[serverNum];
+            string serverURL = Config.GetServerUrl(serverId);
 
             PadInt accPadInt = null;
 
