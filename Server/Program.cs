@@ -24,6 +24,12 @@ namespace Server
             ChannelServices.RegisterChannel(channelServ, true);
             RemotingConfiguration.RegisterWellKnownServiceType(typeof(Server), Config.RemoteServerObjName, WellKnownObjectMode.Singleton);
 
+            /* Register Object With Constructor */
+            //var server = new Server(serverId);
+            //channelServ = new TcpChannel(Config.GetServerPort(serverId));
+            //ChannelServices.RegisterChannel(channelServ, true);
+            //RemotingServices.Marshal(server, Config.RemoteServerObjName);
+
             Console.WriteLine("Press <enter> to exit");
             Console.ReadLine();
         }
