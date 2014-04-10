@@ -10,17 +10,21 @@ namespace Server
     {
         private readonly IParticipant _participant;
         private bool _isFrozen;
+        private int _serverId;
 
         public Server(int serverId)
         {
+            _serverId = serverId;
             _participant = new Participant(serverId, new KeyValueStorage());
         }
 
         public bool Status()
         {
-            Console.WriteLine("[ServerStatus] Entering/Exiting Status");
+            Console.WriteLine("########## STATE DUMP ##########");
+            Console.WriteLine("[Server: {0}] OK: {1}", _serverId, !_isFrozen);
+            _participant.DumpState();
+            Console.WriteLine("################################");
 
-            /* No futuro deve ir buscar o status do servidor ("OK", "Freeze", "Fail") */
             return !_isFrozen;
         }
 

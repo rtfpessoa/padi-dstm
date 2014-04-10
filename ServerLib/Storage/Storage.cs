@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace ServerLib.Storage
 {
@@ -23,6 +24,11 @@ namespace ServerLib.Storage
         public bool HasValue(int key)
         {
             return _keyStore.ContainsKey(key);
+        }
+
+        public List<KeyValuePair<int, int>> GetValues()
+        {
+            return _keyStore.ToList();
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace ServerLib.Storage
+﻿using System.Collections.Generic;
+
+namespace ServerLib.Storage
 {
     public interface IStorage
     {
@@ -7,5 +9,7 @@
         void WriteValue(int key, int value);
 
         bool HasValue(int key);
+
+        List<KeyValuePair<int, int>> GetValues();
     }
 }

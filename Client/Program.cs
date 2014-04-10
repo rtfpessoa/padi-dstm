@@ -25,6 +25,7 @@ namespace Client
 
             var server = (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(0));
             server.Recover();
+            server.Status();
 
             channelServ.StopListening(null);
             ChannelServices.UnregisterChannel(channelServ);

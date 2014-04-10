@@ -254,5 +254,13 @@ namespace ServerLib.Transactions
 
             return _coordinator;
         }
+
+        public void DumpState()
+        {
+            foreach (var pair in _storage.GetValues())
+            {
+                Console.WriteLine("[Key:{0} | Value:{1}]", pair.Key, pair.Value);
+            }
+        }
     }
 }

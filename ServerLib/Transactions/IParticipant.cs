@@ -18,5 +18,7 @@ namespace ServerLib.Transactions
 
         /// <exception cref="TxException"></exception>
         void AbortTransaction(int txid);
+
+        void DumpState();
     }
 }
