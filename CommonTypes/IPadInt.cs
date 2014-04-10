@@ -1,4 +1,6 @@
-﻿namespace CommonTypes
+﻿using ServerLib.Transactions;
+
+namespace CommonTypes
 {
     public interface IPadInt
     {

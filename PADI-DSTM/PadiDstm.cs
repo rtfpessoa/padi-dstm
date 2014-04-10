@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 using CommonTypes;
+using ServerLib.Transactions;
 
 namespace PADI_DSTM
 {
@@ -276,7 +277,7 @@ namespace PADI_DSTM
                 newPadInt.Read(); // If it reads the padint is already created
                 Console.WriteLine("[Client.AccessPadInt] PadInt {0} already exits", uid);
             }
-            catch (NullReferenceException e)
+            catch (TxException e)
             {
                 newPadInt.Write(0); // Initialize PadInt
                 return newPadInt;
@@ -307,7 +308,7 @@ namespace PADI_DSTM
                 accPadInt = GetPadInt(uid);
                 accPadInt.Read(); // If it doesn't read the padint doesn't exist
             }
-            catch (NullReferenceException e)
+            catch (TxException e)
             {
                 Console.WriteLine("[Client.AccessPadInt] PadInt {0} doesn't exits", uid);
                 return null;

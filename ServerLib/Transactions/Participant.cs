@@ -97,7 +97,7 @@ namespace ServerLib.Transactions
 
             if (!storage.HasValue(key))
             {
-                throw new NullReferenceException();
+                throw new TxException();
             }
 
             if (!txReadSet.ContainsKey(txid))
