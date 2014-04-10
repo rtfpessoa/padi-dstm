@@ -1,12 +1,14 @@
 ﻿using System;
+using ServerLib.Transactions;
 
 namespace CommonTypes
 {
     public interface IServer
     {
-        /// <exception cref="NullReferenceException"> </exception>
+        /// <exception cref="TxException"> </exception>
         int ReadValue(int txid, int key);
 
+        /// <exception cref="TxException"> </exception>
         void WriteValue(int txid, int key, int value);
 
         /// <exception cref="TxException"> </exception>
