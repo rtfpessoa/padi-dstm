@@ -1,7 +1,13 @@
 ﻿namespace ServerLib.Transactions
 {
-    internal interface IParticipant
+    public interface IParticipant
     {
+        /// <exception cref="TxException"></exception>
+        int ReadValue(int txid, int key);
+
+        /// <exception cref="TxException"></exception>
+        void WriteValue(int txid, int key, int value);
+
         /// <exception cref="TxException"></exception>
         void PrepareTransaction(int txid);
 

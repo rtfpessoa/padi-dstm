@@ -6,11 +6,13 @@ using System.Linq;
 
 namespace ServerLib.Transactions
 {
-    public abstract class Participant : MarshalByRefObject, IParticipant
+    public class Participant : MarshalByRefObject, IParticipant
     {
         private ICoordinator coordinator;
 
         private readonly IStorage storage;
+
+        protected readonly int serverId;
         
         private readonly HashSet<int> padIntLocks = new HashSet<int>();
         private readonly Dictionary<int, int> startTxids = new Dictionary<int, int>();
@@ -22,13 +24,12 @@ namespace ServerLib.Transactions
 
         private int biggestCommitedTxid = -1;
 
-        public Participant(IStorage storage)
+        public Participant(int serverId, IStorage storage)
         {
             this.storage = storage;
             this.coordinator = (ICoordinator)Activator.GetObject(typeof(ICoordinator), Config.RemoteMainserverUrl);
+            this.serverId = serverId;
         }
-
-        protected abstract int serverId { get; }
 
         public void PrepareTransaction(int txid)
         {

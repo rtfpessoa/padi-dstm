@@ -7,6 +7,7 @@ using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Text;
 using System.Threading.Tasks;
+using PADI_DSTM;
 
 namespace ClientConsole
 {
@@ -32,6 +33,62 @@ namespace ClientConsole
 
             channelServ.StopListening(null);
             ChannelServices.UnregisterChannel(channelServ);
+        }
+    }
+
+    internal class FreezeTests
+    {
+        public void run()
+        {
+            TcpChannel channelServ = new TcpChannel(9997);
+            ChannelServices.RegisterChannel(channelServ, true);
+
+            Console.WriteLine("Waiting for init. Press to start:");
+            Console.ReadLine();
+
+            IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
+            IServer server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(0));
+
+            int txid = mainServer.StartTransaction();
+            server.WriteValue(txid, 1, 1);
+            server.Freeze();
+            server.WriteValue(txid, 1, 2);
+            Console.WriteLine("Waiting for recover. Press to start:");
+            Console.ReadLine();
+            server.Recover();
+            mainServer.CommitTransaction(txid);
+
+            channelServ.StopListening(null);
+            ChannelServices.UnregisterChannel(channelServ);
+        }
+    }
+
+    internal class TeacherTests
+    {
+        public void run()
+        {
+            bool res;
+
+            PadiDstm.Init();
+
+            res = PadiDstm.TxBegin();
+            PadInt pi_a = PadiDstm.CreatePadInt(0);
+            PadInt pi_b = PadiDstm.CreatePadInt(1);
+            res = PadiDstm.TxCommit();
+
+            res = PadiDstm.TxBegin();
+            pi_a = PadiDstm.AccessPadInt(0);
+            pi_b = PadiDstm.AccessPadInt(1);
+            pi_a.Write(36);
+            pi_b.Write(37);
+            Console.WriteLine("a = " + pi_a.Read());
+            Console.WriteLine("b = " + pi_b.Read());
+            PadiDstm.Status();
+            // The following 3 lines assume we have 2 servers: one at port 2001 and another at port 2002
+            res = PadiDstm.Freeze("tcp://localhost:2001/Server");
+            res = PadiDstm.Recover("tcp://localhost:2001/Server");
+            res = PadiDstm.Fail("tcp://localhost:2002/Server");
+            res = PadiDstm.TxCommit();
         }
     }
 }

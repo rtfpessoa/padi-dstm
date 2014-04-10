@@ -14,9 +14,21 @@ namespace Client
         [STAThread]
         private static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            //Application.EnableVisualStyles();
+            //Application.SetCompatibleTextRenderingDefault(false);
+            //Application.Run(new Form1());
+
+            TcpChannel channelServ = new TcpChannel(4739);
+            ChannelServices.RegisterChannel(channelServ, true);
+
+            Console.WriteLine("Waiting for init. Press to start:");
+            Console.ReadLine();
+
+            IServer server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(0));
+            server.Recover();
+
+            channelServ.StopListening(null);
+            ChannelServices.UnregisterChannel(channelServ);
         }
     }
 }
