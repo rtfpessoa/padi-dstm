@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using CommonTypes;
 using ServerLib.NameRegistry;
 using ServerLib.Transactions;
@@ -31,7 +32,15 @@ namespace MainServer
 
         public bool GetServerStatus()
         {
-            return true;
+            var result = true;
+
+            foreach (var serverId in _registry)
+            {
+                var server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(serverId));
+                result &= server.Status();
+            }
+
+            return result;
         }
     }
 }
