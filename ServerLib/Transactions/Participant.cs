@@ -1,4 +1,5 @@
-﻿using ServerLib.Storage;
+﻿using CommonTypes;
+using ServerLib.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ namespace ServerLib.Transactions
 {
     public abstract class Participant : MarshalByRefObject, IParticipant
     {
-        private readonly ICoordinator coordinator;
+        private ICoordinator coordinator;
         private readonly HashSet<int> padIntLocks = new HashSet<int>();
         private readonly Dictionary<int, int> startTxids = new Dictionary<int, int>();
         private readonly IStorage storage;
@@ -235,8 +236,18 @@ namespace ServerLib.Transactions
                 txWriteSet.Add(txid, new HashSet<int>());
 
                 startTxids.Add(txid, biggestCommitedTxid);
-                coordinator.JoinTransaction(txid, serverId);
+                GetCoordinator().JoinTransaction(txid, serverId);
             }
+        }
+
+        private ICoordinator GetCoordinator()
+        {
+            if (coordinator == null)
+            {
+                coordinator = (ICoordinator)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
+            }
+
+            return coordinator;
         }
     }
 }
