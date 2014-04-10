@@ -22,6 +22,7 @@ namespace ServerLib.Transactions
         public Participant(IStorage storage)
         {
             this.storage = storage;
+            this.coordinator = (ICoordinator)Activator.GetObject(typeof(ICoordinator), Config.RemoteMainserverUrl);
         }
 
         protected abstract int serverId { get; }
