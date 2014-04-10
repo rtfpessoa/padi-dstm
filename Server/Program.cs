@@ -14,7 +14,7 @@ namespace Server
             ChannelServices.RegisterChannel(channelServ, true);
 
             var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl);
-            int serverId = mainServer.AddServer();
+            var serverId = mainServer.AddServer();
 
             channelServ.StopListening(null);
             ChannelServices.UnregisterChannel(channelServ);

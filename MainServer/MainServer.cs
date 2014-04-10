@@ -12,7 +12,7 @@ namespace MainServer
 
         public int AddServer()
         {
-            int uid = _serverUidGenerator++;
+            var uid = _serverUidGenerator++;
             _registry.Add(uid);
             return uid;
         }

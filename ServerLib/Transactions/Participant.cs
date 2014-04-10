@@ -30,35 +30,34 @@ namespace ServerLib.Transactions
 
         public void PrepareTransaction(int txid)
         {
-            if (!IsReadOnlyTx(txid))
+            if (IsReadOnlyTx(txid)) return;
+            
+            foreach (var padInt in _txWriteSet[txid])
             {
-                foreach (int padInt in _txWriteSet[txid])
+                if (!_padIntLocks.Contains(padInt))
                 {
-                    if (!_padIntLocks.Contains(padInt))
-                    {
-                        _padIntLocks.Add(padInt);
-                    }
-                    else
-                    {
-                        throw new TxException();
-                    }
+                    _padIntLocks.Add(padInt);
                 }
-
-                if (ReadOtherWrites(txid))
+                else
                 {
-                    foreach (int padInt in _txWriteSet[txid])
-                    {
-                        _padIntLocks.Remove(padInt);
-                    }
-
                     throw new TxException();
                 }
+            }
 
-                IEnumerable<int> conflicts = WriteOtherReads(txid);
-                foreach (int conflict in conflicts)
+            if (ReadOtherWrites(txid))
+            {
+                foreach (var padInt in _txWriteSet[txid])
                 {
-                    // TODO: Abort transaction `conflict`
+                    _padIntLocks.Remove(padInt);
                 }
+
+                throw new TxException();
+            }
+
+            var conflicts = WriteOtherReads(txid);
+            foreach (var conflict in conflicts)
+            {
+                // TODO: Abort transaction `conflict`
             }
         }
 
@@ -72,7 +71,7 @@ namespace ServerLib.Transactions
                 }
             }
 
-            foreach (int padInt in _txWriteSet[txid])
+            foreach (var padInt in _txWriteSet[txid])
             {
                 _padIntLocks.Remove(padInt);
             }
@@ -177,15 +176,14 @@ namespace ServerLib.Transactions
             HashSet<int> reads;
             _txReadSet.TryGetValue(txid, out reads);
 
-            for (int overlapTxid = startTxid + 1; overlapTxid <= endTxid; overlapTxid++)
+            for (var overlapTxid = startTxid + 1; overlapTxid <= endTxid; overlapTxid++)
             {
                 HashSet<int> overlapTxWrites;
-                if (overlapTxid != txid && _txWriteSet.TryGetValue(overlapTxid, out overlapTxWrites))
+                if (overlapTxid == txid || !_txWriteSet.TryGetValue(overlapTxid, out overlapTxWrites)) continue;
+                
+                if (reads != null && overlapTxWrites.Intersect(reads).Any())
                 {
-                    if (reads != null && overlapTxWrites.Intersect(reads).Any())
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
@@ -234,25 +232,20 @@ namespace ServerLib.Transactions
 
         private void DoJoinTransaction(int txid)
         {
-            if (!_startTxids.ContainsKey(txid))
-            {
-                _txPadInts.Add(txid, new Dictionary<int, int>());
-                _txReadSet.Add(txid, new HashSet<int>());
-                _txWriteSet.Add(txid, new HashSet<int>());
+            if (_startTxids.ContainsKey(txid)) return;
+            
+            _txPadInts.Add(txid, new Dictionary<int, int>());
+            _txReadSet.Add(txid, new HashSet<int>());
+            _txWriteSet.Add(txid, new HashSet<int>());
 
-                _startTxids.Add(txid, _biggestCommitedTxid);
-                GetCoordinator().JoinTransaction(txid, _serverId);
-            }
+            _startTxids.Add(txid, _biggestCommitedTxid);
+            GetCoordinator().JoinTransaction(txid, _serverId);
         }
 
         private ICoordinator GetCoordinator()
         {
-            if (_coordinator == null)
-            {
-                _coordinator = (ICoordinator) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl);
-            }
-
-            return _coordinator;
+            return _coordinator ??
+                   (_coordinator = (ICoordinator) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl));
         }
 
         public void DumpState()

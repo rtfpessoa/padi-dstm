@@ -1,4 +1,6 @@
-﻿namespace ClientConsole
+﻿using ClientConsole.Tests;
+
+namespace ClientConsole
 {
     internal class SampleApp
     {
@@ -6,7 +8,7 @@
         {
             //new TransactionsTests().run();
 
-            new FreezeTests().run();
+            new FreezeTests().Run();
 
             //new TeacherTests().run();
         }

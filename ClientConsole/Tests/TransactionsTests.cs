@@ -1,28 +1,23 @@
-﻿using CommonTypes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Remoting;
+﻿using System;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
-using System.Text;
-using System.Threading.Tasks;
+using CommonTypes;
 using PADI_DSTM;
 
-namespace ClientConsole
+namespace ClientConsole.Tests
 {
     internal class TransactionsTests
     {
-        public void run()
+        public void Run()
         {
-            TcpChannel channelServ = new TcpChannel(9997);
+            var channelServ = new TcpChannel(9997);
             ChannelServices.RegisterChannel(channelServ, true);
 
             Console.WriteLine("Waiting for init. Press to start:");
             Console.ReadLine();
 
-            IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
-            IServer server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(0));
+            var mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
+            var server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(0));
 
             int txid1 = mainServer.StartTransaction();
             int txid2 = mainServer.StartTransaction();
@@ -38,16 +33,16 @@ namespace ClientConsole
 
     internal class FreezeTests
     {
-        public void run()
+        public void Run()
         {
-            TcpChannel channelServ = new TcpChannel(9997);
+            var channelServ = new TcpChannel(9997);
             ChannelServices.RegisterChannel(channelServ, true);
 
             Console.WriteLine("Waiting for init. Press to start:");
             Console.ReadLine();
 
-            IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
-            IServer server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(0));
+            var mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
+            var server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(0));
 
             int txid = mainServer.StartTransaction();
             server.WriteValue(txid, 1, 1);
@@ -65,7 +60,7 @@ namespace ClientConsole
 
     internal class TeacherTests
     {
-        public void run()
+        public void Run()
         {
             bool res;
 

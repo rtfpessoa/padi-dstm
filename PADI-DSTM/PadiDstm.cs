@@ -42,7 +42,7 @@ namespace PADI_DSTM
                 _serverList = mainServer.ListServers();
 
                 /* DEBUG PROPOSES*/
-                for (int i = 0; i < _serverList.Count; i++)
+                for (var i = 0; i < _serverList.Count; i++)
                 {
                     Console.WriteLine("[Client.Init] Server {0}: {1}", i, _serverList[i]);
                 }
@@ -154,7 +154,7 @@ namespace PADI_DSTM
                 var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl);
 
                 /* 2. Temos que obter a list dos status dos servidores */
-                bool ex = mainServer.GetServerStatus();
+                var ex = mainServer.GetServerStatus();
 
                 /* DEBUG PROPOSES */
                 Console.WriteLine("[Servers.Status] {0}", ex);
@@ -325,9 +325,9 @@ namespace PADI_DSTM
 
         private static PadInt GetPadInt(int uid)
         {
-            int serverNum = uid%_serverList.Count;
-            int serverId = _serverList.ToArray()[serverNum];
-            string serverUrl = Config.GetServerUrl(serverId);
+            var serverNum = uid%_serverList.Count;
+            var serverId = _serverList.ToArray()[serverNum];
+            var serverUrl = Config.GetServerUrl(serverId);
 
             var server = (IServer) Activator.GetObject(typeof (IServer), serverUrl);
 

@@ -10,7 +10,7 @@ namespace Server
     {
         private readonly IParticipant _participant;
         private bool _isFrozen;
-        private int _serverId;
+        private readonly int _serverId;
 
         public Server(int serverId)
         {
