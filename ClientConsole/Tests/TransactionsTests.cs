@@ -17,12 +17,14 @@ namespace ClientConsole
             TcpChannel channelServ = new TcpChannel(9997);
             ChannelServices.RegisterChannel(channelServ, true);
 
+            Console.WriteLine("Waiting for init. Press to start:");
+            Console.ReadLine();
+
             IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
             IServer server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(0));
 
             int txid1 = mainServer.StartTransaction();
             int txid2 = mainServer.StartTransaction();
-            server.WriteValue(txid1, 1, 1);
             server.ReadValue(txid1, 1);
             server.WriteValue(txid1, 1, 10);
             server.ReadValue(txid2, 1);

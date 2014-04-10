@@ -20,7 +20,9 @@ namespace Server
             ChannelServices.UnregisterChannel(channelServ);
             channelServ = null;
 
-            IServer server = new Server(serverId, mainServer);
+            channelServ = new TcpChannel(Config.GetServerPort(serverId));
+            ChannelServices.RegisterChannel(channelServ, true);
+            RemotingConfiguration.RegisterWellKnownServiceType(typeof(Server), Config.RemoteServerObjName, WellKnownObjectMode.Singleton);
 
             Console.WriteLine("Press <enter> to exit");
             Console.ReadLine();

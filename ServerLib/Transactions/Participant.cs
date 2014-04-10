@@ -1,7 +1,7 @@
-﻿using System;
+﻿using ServerLib.Storage;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using ServerLib.Storage;
 
 namespace ServerLib.Transactions
 {
@@ -18,9 +18,8 @@ namespace ServerLib.Transactions
 
         private int biggestCommitedTxid;
 
-        public Participant(ICoordinator coordinator, IStorage storage)
+        public Participant(IStorage storage)
         {
-            this.coordinator = coordinator;
             this.storage = storage;
         }
 
