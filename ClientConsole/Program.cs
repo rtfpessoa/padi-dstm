@@ -7,7 +7,7 @@ namespace ClientConsole
     {
         private static void Main(string[] args)
         {
-            new TransactionsTests().run();
+            //new TransactionsTests().run();
 
             ///
 

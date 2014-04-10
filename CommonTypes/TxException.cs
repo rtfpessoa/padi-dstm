@@ -2,10 +2,24 @@
 using System.Runtime.Remoting;
 using System.Runtime.Serialization;
 
-namespace ServerLib.Transactions
+namespace CommonTypes
 {
     [Serializable]
-    public class TxException : RemotingException, ISerializable
+    public class TxException : ApplicationException
     {
+
+        public TxException()
+        {
+        }
+
+        public TxException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+        }
+
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            base.GetObjectData(info, context);
+        }
     }
 }

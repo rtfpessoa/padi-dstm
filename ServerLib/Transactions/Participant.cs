@@ -173,7 +173,7 @@ namespace ServerLib.Transactions
             HashSet<int> reads;
             txReadSet.TryGetValue(txid, out reads);
 
-            for (int overlapTxid = startTxid; overlapTxid <= endTxid; overlapTxid++)
+            for (int overlapTxid = startTxid + 1; overlapTxid <= endTxid; overlapTxid++)
             {
                 HashSet<int> overlapTxWrites;
                 if (overlapTxid != txid && txWriteSet.TryGetValue(overlapTxid, out overlapTxWrites))
