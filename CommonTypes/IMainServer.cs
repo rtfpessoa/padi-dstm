@@ -22,6 +22,6 @@ namespace CommonTypes
 
         /* Function to give to the client the all Server Status */
 
-        bool getServerStatus();
+        bool GetServerStatus();
     }
 }

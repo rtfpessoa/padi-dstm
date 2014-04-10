@@ -1,35 +1,35 @@
-﻿using CommonTypes;
+﻿using System.Collections.Generic;
+using CommonTypes;
 using ServerLib.NameRegistry;
 using ServerLib.Transactions;
-using System.Collections.Generic;
 
 namespace MainServer
 {
     internal class MainServer : Coordinator, IMainServer, INameRegistry
     {
-        private int serverUidGenerator = 0;
-        private List<int> registry = new List<int>();
+        private readonly List<int> _registry = new List<int>();
+        private int _serverUidGenerator;
 
         public int AddServer()
         {
-            int uid = serverUidGenerator++;
-            registry.Add(uid);
+            int uid = _serverUidGenerator++;
+            _registry.Add(uid);
             return uid;
         }
 
         public void RemoveServer(int uid)
         {
-            registry.Remove(uid);
+            _registry.Remove(uid);
         }
 
         public List<int> ListServers()
         {
-            return registry;
+            return _registry;
         }
 
         /* Give the Server List */
 
-        public bool getServerStatus()
+        public bool GetServerStatus()
         {
             return true;
         }

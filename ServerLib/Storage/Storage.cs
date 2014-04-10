@@ -4,25 +4,25 @@ namespace ServerLib.Storage
 {
     public class KeyValueStorage : IStorage
     {
-        private readonly Dictionary<int, int> keyStore = new Dictionary<int, int>();
+        private readonly Dictionary<int, int> _keyStore = new Dictionary<int, int>();
 
         public int ReadValue(int key)
         {
-            int value = 0;
+            int value;
 
-            keyStore.TryGetValue(key, out value);
+            _keyStore.TryGetValue(key, out value);
 
             return value;
         }
 
         public void WriteValue(int key, int value)
         {
-            keyStore[key] = value;
+            _keyStore[key] = value;
         }
 
         public bool HasValue(int key)
         {
-            return keyStore.ContainsKey(key);
+            return _keyStore.ContainsKey(key);
         }
     }
 }

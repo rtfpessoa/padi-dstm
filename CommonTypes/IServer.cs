@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace CommonTypes
+﻿namespace CommonTypes
 {
     public interface IServer
     {

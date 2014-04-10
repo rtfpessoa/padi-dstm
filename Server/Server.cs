@@ -1,22 +1,19 @@
-﻿using CommonTypes;
+﻿using System;
+using System.Threading;
+using CommonTypes;
 using ServerLib.Storage;
 using ServerLib.Transactions;
-using System;
-using System.Runtime.Remoting;
-using System.Runtime.Remoting.Channels;
-using System.Runtime.Remoting.Channels.Tcp;
-using System.Threading;
 
 namespace Server
 {
     internal class Server : MarshalByRefObject, IServer
     {
         private readonly IParticipant _participant;
-        private bool isFrozen = false;
+        private bool _isFrozen;
 
         public Server(int serverId)
         {
-            this._participant = new Participant(serverId, new KeyValueStorage());
+            _participant = new Participant(serverId, new KeyValueStorage());
         }
 
         public bool Status()
@@ -24,7 +21,7 @@ namespace Server
             Console.WriteLine("[ServerStatus] Entering/Exiting Status");
 
             /* No futuro deve ir buscar o status do servidor ("OK", "Freeze", "Fail") */
-            return !isFrozen;
+            return !_isFrozen;
         }
 
         public bool Fail()
@@ -36,14 +33,14 @@ namespace Server
 
         public bool Freeze()
         {
-            return isFrozen = true;
+            return _isFrozen = true;
         }
 
         public bool Recover()
         {
             lock (this)
             {
-                isFrozen = false;
+                _isFrozen = false;
 
                 Monitor.PulseAll(this);
 
@@ -103,7 +100,7 @@ namespace Server
 
         private void WaitIfFrozen()
         {
-            if (isFrozen)
+            if (_isFrozen)
             {
                 Monitor.Wait(this);
             }

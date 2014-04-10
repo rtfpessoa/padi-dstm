@@ -1,5 +1,4 @@
-﻿
-namespace CommonTypes
+﻿namespace CommonTypes
 {
     public interface IPadInt
     {

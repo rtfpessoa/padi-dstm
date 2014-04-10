@@ -1,4 +1,6 @@
-﻿namespace ServerLib.Transactions
+﻿using CommonTypes;
+
+namespace ServerLib.Transactions
 {
     public interface ICoordinator
     {

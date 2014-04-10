@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.Remoting;
 using System.Runtime.Serialization;
 
 namespace CommonTypes
@@ -7,7 +6,6 @@ namespace CommonTypes
     [Serializable]
     public class TxException : ApplicationException
     {
-
         public TxException()
         {
         }

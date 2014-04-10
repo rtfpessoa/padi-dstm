@@ -6,10 +6,10 @@ namespace ServerLib.Transactions
 {
     public abstract class Coordinator : MarshalByRefObject, ICoordinator
     {
-        private readonly Dictionary<int, List<ParticipantProxy>> transactions =
+        private readonly Dictionary<int, List<ParticipantProxy>> _transactions =
             new Dictionary<int, List<ParticipantProxy>>();
 
-        private int currentTxid;
+        private int _currentTxid;
 
         /**
          * Creates a new random global transaction id
@@ -17,9 +17,9 @@ namespace ServerLib.Transactions
 
         public int StartTransaction()
         {
-            int txid = currentTxid++;
+            int txid = _currentTxid++;
 
-            transactions.Add(txid, new List<ParticipantProxy>());
+            _transactions.Add(txid, new List<ParticipantProxy>());
 
             Console.WriteLine("Started transaction with TxID {0}", txid);
             return txid;
@@ -33,7 +33,7 @@ namespace ServerLib.Transactions
         {
             List<ParticipantProxy> participants;
 
-            if (!transactions.TryGetValue(txid, out participants))
+            if (!_transactions.TryGetValue(txid, out participants))
             {
                 participants = new List<ParticipantProxy>();
             }
@@ -65,29 +65,30 @@ namespace ServerLib.Transactions
             bool result = true;
             List<ParticipantProxy> participants;
 
-            transactions.TryGetValue(txid, out participants);
+            _transactions.TryGetValue(txid, out participants);
 
-            foreach (ParticipantProxy participant in participants)
-            {
-                IParticipant proxy = participant.GetProxy();
-
-                try
+            if (participants != null)
+                foreach (ParticipantProxy participant in participants)
                 {
-                    proxy.CommitTransaction(txid);
-                    result = true;
+                    IParticipant proxy = participant.GetProxy();
 
-                    Console.WriteLine("{0} commited transaction {1}", participant.endpoint, txid);
+                    try
+                    {
+                        proxy.CommitTransaction(txid);
+                        result = true;
+
+                        Console.WriteLine("{0} commited transaction {1}", participant.Endpoint, txid);
+                    }
+                    catch (TxException ex)
+                    {
+                        result = false;
+
+                        Console.WriteLine("{0} failed to commit transaction {1}", participant.Endpoint, txid);
+                        Console.WriteLine(ex.ToString());
+
+                        break;
+                    }
                 }
-                catch (TxException ex)
-                {
-                    result = false;
-
-                    Console.WriteLine("{0} failed to commit transaction {1}", participant.endpoint, txid);
-                    Console.WriteLine(ex.ToString());
-
-                    break;
-                }
-            }
 
             if (!result)
             {
@@ -99,17 +100,20 @@ namespace ServerLib.Transactions
         {
             List<ParticipantProxy> participants;
 
-            transactions.TryGetValue(txid, out participants);
+            _transactions.TryGetValue(txid, out participants);
 
-            var pending = new Queue<ParticipantProxy>(participants);
-
-            while (pending.Count > 0)
+            if (participants != null)
             {
-                ParticipantProxy proxy = pending.Dequeue();
+                var pending = new Queue<ParticipantProxy>(participants);
 
-                if (!AbortTransactionForParticipant(txid, proxy))
+                while (pending.Count > 0)
                 {
-                    pending.Enqueue(proxy);
+                    ParticipantProxy proxy = pending.Dequeue();
+
+                    if (!AbortTransactionForParticipant(txid, proxy))
+                    {
+                        pending.Enqueue(proxy);
+                    }
                 }
             }
         }
@@ -118,26 +122,27 @@ namespace ServerLib.Transactions
         {
             List<ParticipantProxy> participants;
 
-            transactions.TryGetValue(txid, out participants);
+            _transactions.TryGetValue(txid, out participants);
 
-            foreach (ParticipantProxy participant in participants)
-            {
-                IParticipant proxy = participant.GetProxy();
-                try
+            if (participants != null)
+                foreach (ParticipantProxy participant in participants)
                 {
-                    proxy.PrepareTransaction(txid);
-                    participant.readyToCommit = true;
+                    IParticipant proxy = participant.GetProxy();
+                    try
+                    {
+                        proxy.PrepareTransaction(txid);
+                        participant.ReadyToCommit = true;
 
-                    Console.WriteLine("{0} prepared for transaction {1}", participant.endpoint, txid);
-                }
-                catch (TxException ex)
-                {
-                    participant.readyToCommit = false;
+                        Console.WriteLine("{0} prepared for transaction {1}", participant.Endpoint, txid);
+                    }
+                    catch (TxException ex)
+                    {
+                        participant.ReadyToCommit = false;
 
-                    Console.WriteLine("{0} failed to prepare transaction {1}", participant.endpoint, txid);
-                    Console.WriteLine(ex.ToString());
+                        Console.WriteLine("{0} failed to prepare transaction {1}", participant.Endpoint, txid);
+                        Console.WriteLine(ex.ToString());
+                    }
                 }
-            }
         }
 
         /**
@@ -150,12 +155,13 @@ namespace ServerLib.Transactions
             bool result = true;
             List<ParticipantProxy> participants;
 
-            transactions.TryGetValue(txid, out participants);
+            _transactions.TryGetValue(txid, out participants);
 
-            foreach (ParticipantProxy participant in participants)
-            {
-                result &= participant.readyToCommit;
-            }
+            if (participants != null)
+                foreach (ParticipantProxy participant in participants)
+                {
+                    result &= participant.ReadyToCommit;
+                }
 
             return result;
         }
@@ -168,13 +174,13 @@ namespace ServerLib.Transactions
             {
                 proxy.AbortTransaction(txid);
 
-                Console.WriteLine("{0} aborted transaction {1}", participant.endpoint, txid);
+                Console.WriteLine("{0} aborted transaction {1}", participant.Endpoint, txid);
 
                 return true;
             }
             catch (TxException ex)
             {
-                Console.WriteLine("{0} failed to abort transaction {1}", participant.endpoint, txid);
+                Console.WriteLine("{0} failed to abort transaction {1}", participant.Endpoint, txid);
                 Console.WriteLine(ex.ToString());
 
                 return false;

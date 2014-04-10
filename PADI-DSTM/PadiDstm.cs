@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 using CommonTypes;
@@ -153,7 +154,7 @@ namespace PADI_DSTM
                 var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl);
 
                 /* 2. Temos que obter a list dos status dos servidores */
-                bool ex = mainServer.getServerStatus();
+                bool ex = mainServer.GetServerStatus();
 
                 /* DEBUG PROPOSES */
                 Console.WriteLine("[Servers.Status] {0}", ex);
@@ -227,9 +228,9 @@ namespace PADI_DSTM
         }
 
         /*
-* This method creates a new shared object with the given uid. Returns null if the
-* object already exists.
-*/
+         * This method creates a new shared object with the given uid. Returns null if the
+         * object already exists.
+         */
 
         public static bool Recover(String url)
         {
@@ -276,8 +277,10 @@ namespace PADI_DSTM
                 newPadInt.Read(); // If it reads the padint is already created
                 Console.WriteLine("[Client.AccessPadInt] PadInt {0} already exits", uid);
             }
-            catch (TxException e)
+            catch (TxException)
             {
+                Debug.Assert(newPadInt != null, "newPadInt != null");
+
                 newPadInt.Write(0); // Initialize PadInt
                 return newPadInt;
             }
@@ -307,7 +310,7 @@ namespace PADI_DSTM
                 accPadInt = GetPadInt(uid);
                 accPadInt.Read(); // If it doesn't read the padint doesn't exist
             }
-            catch (TxException e)
+            catch (TxException)
             {
                 Console.WriteLine("[Client.AccessPadInt] PadInt {0} doesn't exits", uid);
                 return null;

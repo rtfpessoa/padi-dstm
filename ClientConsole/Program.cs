@@ -1,7 +1,4 @@
-﻿using PADI_DSTM;
-using System;
-
-namespace ClientConsole
+﻿namespace ClientConsole
 {
     internal class SampleApp
     {
