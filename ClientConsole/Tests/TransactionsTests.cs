@@ -25,18 +25,8 @@ namespace ClientConsole
 
             int txid1 = mainServer.StartTransaction();
             int txid2 = mainServer.StartTransaction();
-            try
-            {
-                server.ReadValue(txid1, 1);
-                Console.WriteLine("FAIl");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("PASS");
-            }
-            server.WriteValue(txid1, 1, 10);
-            server.ReadValue(txid2, 1);
-            server.WriteValue(txid2, 1, 10);
+            server.WriteValue(txid1, 1, 1);
+            server.WriteValue(txid2, 1, 2);
             mainServer.CommitTransaction(txid1);
             mainServer.CommitTransaction(txid2);
 

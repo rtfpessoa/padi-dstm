@@ -9,15 +9,18 @@ namespace ServerLib.Transactions
     public abstract class Participant : MarshalByRefObject, IParticipant
     {
         private ICoordinator coordinator;
+
+        private readonly IStorage storage;
+        
         private readonly HashSet<int> padIntLocks = new HashSet<int>();
         private readonly Dictionary<int, int> startTxids = new Dictionary<int, int>();
-        private readonly IStorage storage;
+        
         private readonly Dictionary<int, Dictionary<int, int>> txPadInts = new Dictionary<int, Dictionary<int, int>>();
 
         private readonly Dictionary<int, HashSet<int>> txReadSet = new Dictionary<int, HashSet<int>>();
         private readonly Dictionary<int, HashSet<int>> txWriteSet = new Dictionary<int, HashSet<int>>();
 
-        private int biggestCommitedTxid;
+        private int biggestCommitedTxid = -1;
 
         public Participant(IStorage storage)
         {
@@ -140,6 +143,9 @@ namespace ServerLib.Transactions
             txPadInts[txid][key] = value;
 
             storage.WriteValue(key, value);
+
+            /* Fake read */
+            ReadValue(txid, key);
 
             Console.WriteLine("Tx {0} wrote the PadInt {1} with value {2}", txid, key, value);
         }

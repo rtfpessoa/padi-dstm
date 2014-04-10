@@ -9,8 +9,6 @@ namespace ClientConsole
         {
             //new TransactionsTests().run();
 
-            ///
-
             bool res;
 
             PadiDstm.Init();

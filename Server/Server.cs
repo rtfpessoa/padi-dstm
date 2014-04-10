@@ -20,11 +20,10 @@ namespace Server
             }
         }
 
-        private readonly IMainServer mainServer;
-
-        public Server()
+        public Server(int serverId)
             : base(new KeyValueStorage())
         {
+            this._serverId = serverId;
         }
 
         public bool Status()
