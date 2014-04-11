@@ -13,7 +13,7 @@ namespace MainServer
 
         public int AddServer()
         {
-            var uid = _serverUidGenerator++;
+            int uid = _serverUidGenerator++;
             _registry.Add(uid);
             return uid;
         }
@@ -32,11 +32,11 @@ namespace MainServer
 
         public bool GetServerStatus()
         {
-            var result = true;
+            bool result = true;
 
-            foreach (var serverId in _registry)
+            foreach (int serverId in _registry)
             {
-                var server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(serverId));
+                var server = (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(serverId));
                 result &= server.Status();
             }
 

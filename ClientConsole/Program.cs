@@ -6,11 +6,11 @@ namespace ClientConsole
     {
         private static void Main(string[] args)
         {
-            //new TransactionsTests().run();
+            //new TransactionsTests().Run();
 
-            new FreezeTests().Run();
+            //new FreezeTests().Run();
 
-            //new TeacherTests().run();
+            new TeacherTests().Run();
         }
     }
 }

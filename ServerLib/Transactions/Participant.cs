@@ -31,8 +31,8 @@ namespace ServerLib.Transactions
         public void PrepareTransaction(int txid)
         {
             if (IsReadOnlyTx(txid)) return;
-            
-            foreach (var padInt in _txWriteSet[txid])
+
+            foreach (int padInt in _txWriteSet[txid])
             {
                 if (!_padIntLocks.Contains(padInt))
                 {
@@ -46,7 +46,7 @@ namespace ServerLib.Transactions
 
             if (ReadOtherWrites(txid))
             {
-                foreach (var padInt in _txWriteSet[txid])
+                foreach (int padInt in _txWriteSet[txid])
                 {
                     _padIntLocks.Remove(padInt);
                 }
@@ -54,8 +54,8 @@ namespace ServerLib.Transactions
                 throw new TxException();
             }
 
-            var conflicts = WriteOtherReads(txid);
-            foreach (var conflict in conflicts)
+            IEnumerable<int> conflicts = WriteOtherReads(txid);
+            foreach (int conflict in conflicts)
             {
                 // TODO: Abort transaction `conflict`
             }
@@ -71,7 +71,7 @@ namespace ServerLib.Transactions
                 }
             }
 
-            foreach (var padInt in _txWriteSet[txid])
+            foreach (int padInt in _txWriteSet[txid])
             {
                 _padIntLocks.Remove(padInt);
             }
@@ -147,6 +147,14 @@ namespace ServerLib.Transactions
             Console.WriteLine("Tx {0} wrote the PadInt {1} with value {2}", txid, key, value);
         }
 
+        public void DumpState()
+        {
+            foreach (var pair in _storage.GetValues())
+            {
+                Console.WriteLine("[Key:{0} | Value:{1}]", pair.Key, pair.Value);
+            }
+        }
+
         /*
          * Checks if a transaction is read-only (didn't wrote any PadInts)
          */
@@ -176,11 +184,11 @@ namespace ServerLib.Transactions
             HashSet<int> reads;
             _txReadSet.TryGetValue(txid, out reads);
 
-            for (var overlapTxid = startTxid + 1; overlapTxid <= endTxid; overlapTxid++)
+            for (int overlapTxid = startTxid + 1; overlapTxid <= endTxid; overlapTxid++)
             {
                 HashSet<int> overlapTxWrites;
                 if (overlapTxid == txid || !_txWriteSet.TryGetValue(overlapTxid, out overlapTxWrites)) continue;
-                
+
                 if (reads != null && overlapTxWrites.Intersect(reads).Any())
                 {
                     return true;
@@ -233,7 +241,7 @@ namespace ServerLib.Transactions
         private void DoJoinTransaction(int txid)
         {
             if (_startTxids.ContainsKey(txid)) return;
-            
+
             _txPadInts.Add(txid, new Dictionary<int, int>());
             _txReadSet.Add(txid, new HashSet<int>());
             _txWriteSet.Add(txid, new HashSet<int>());
@@ -246,14 +254,6 @@ namespace ServerLib.Transactions
         {
             return _coordinator ??
                    (_coordinator = (ICoordinator) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl));
-        }
-
-        public void DumpState()
-        {
-            foreach (var pair in _storage.GetValues())
-            {
-                Console.WriteLine("[Key:{0} | Value:{1}]", pair.Key, pair.Value);
-            }
         }
     }
 }

@@ -6,16 +6,21 @@ using ServerLib.Transactions;
 
 namespace Server
 {
-    internal class Server : MarshalByRefObject, IServer
+    internal class Server : MarshalByRefObject, IServer, IParticipant
     {
         private readonly IParticipant _participant;
-        private bool _isFrozen;
         private readonly int _serverId;
+        private bool _isFrozen;
 
         public Server(int serverId)
         {
             _serverId = serverId;
             _participant = new Participant(serverId, new KeyValueStorage());
+        }
+
+        public void DumpState()
+        {
+            _participant.DumpState();
         }
 
         public bool Status()

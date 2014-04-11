@@ -16,8 +16,8 @@ namespace ClientConsole.Tests
             Console.WriteLine("Waiting for init. Press to start:");
             Console.ReadLine();
 
-            var mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
-            var server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(0));
+            var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl);
+            var server = (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(0));
 
             int txid1 = mainServer.StartTransaction();
             int txid2 = mainServer.StartTransaction();
@@ -41,8 +41,8 @@ namespace ClientConsole.Tests
             Console.WriteLine("Waiting for init. Press to start:");
             Console.ReadLine();
 
-            var mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
-            var server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(0));
+            var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl);
+            var server = (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(0));
 
             int txid = mainServer.StartTransaction();
             server.WriteValue(txid, 1, 1);

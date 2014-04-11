@@ -24,5 +24,7 @@
         bool Freeze();
 
         bool Recover();
+
+        void DumpState();
     }
 }

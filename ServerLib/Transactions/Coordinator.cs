@@ -17,7 +17,7 @@ namespace ServerLib.Transactions
 
         public int StartTransaction()
         {
-            var txid = _currentTxid++;
+            int txid = _currentTxid++;
 
             _transactions.Add(txid, new List<ParticipantProxy>());
 
@@ -62,15 +62,15 @@ namespace ServerLib.Transactions
                 return;
             }
 
-            var result = true;
+            bool result = true;
             List<ParticipantProxy> participants;
 
             _transactions.TryGetValue(txid, out participants);
 
             if (participants != null)
-                foreach (var participant in participants)
+                foreach (ParticipantProxy participant in participants)
                 {
-                    var proxy = participant.GetProxy();
+                    IParticipant proxy = participant.GetProxy();
 
                     try
                     {
@@ -107,7 +107,7 @@ namespace ServerLib.Transactions
 
             while (pending.Count > 0)
             {
-                var proxy = pending.Dequeue();
+                ParticipantProxy proxy = pending.Dequeue();
 
                 if (!AbortTransactionForParticipant(txid, proxy))
                 {
@@ -123,10 +123,10 @@ namespace ServerLib.Transactions
             _transactions.TryGetValue(txid, out participants);
 
             if (participants == null) return;
-            
-            foreach (var participant in participants)
+
+            foreach (ParticipantProxy participant in participants)
             {
-                var proxy = participant.GetProxy();
+                IParticipant proxy = participant.GetProxy();
                 try
                 {
                     proxy.PrepareTransaction(txid);
@@ -151,13 +151,13 @@ namespace ServerLib.Transactions
 
         private bool IsReadyToCommit(int txid)
         {
-            var result = true;
+            bool result = true;
             List<ParticipantProxy> participants;
 
             _transactions.TryGetValue(txid, out participants);
 
             if (participants == null) return true;
-            
+
             foreach (ParticipantProxy participant in participants)
             {
                 result &= participant.ReadyToCommit;
@@ -168,7 +168,7 @@ namespace ServerLib.Transactions
 
         private bool AbortTransactionForParticipant(int txid, ParticipantProxy participant)
         {
-            var proxy = participant.GetProxy();
+            IParticipant proxy = participant.GetProxy();
 
             try
             {
