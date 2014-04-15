@@ -59,7 +59,7 @@ namespace ServerLib.Transactions
             if (!IsReadyToCommit(txid))
             {
                 AbortTransaction(txid);
-                return;
+                throw new TxException();
             }
 
             bool result = true;
@@ -92,6 +92,7 @@ namespace ServerLib.Transactions
             if (!result)
             {
                 AbortTransaction(txid);
+                throw new TxException();
             }
         }
 
@@ -101,7 +102,7 @@ namespace ServerLib.Transactions
 
             _transactions.TryGetValue(txid, out participants);
 
-            if (participants == null) return;
+            if (participants == null) throw new TxException();
 
             var pending = new Queue<ParticipantProxy>(participants);
 
