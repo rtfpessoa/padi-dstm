@@ -52,59 +52,44 @@ namespace Server
                 _isFrozen = false;
 
                 Monitor.PulseAll(this);
-
-                return true;
             }
+
+            return true;
         }
 
         public int ReadValue(int txid, int key)
         {
-            lock (this)
-            {
-                WaitIfFrozen();
+            WaitIfFrozen();
 
-                return _participant.ReadValue(txid, key);
-            }
+            return _participant.ReadValue(txid, key);
         }
 
         public void WriteValue(int txid, int key, int value)
         {
-            lock (this)
-            {
-                WaitIfFrozen();
+            WaitIfFrozen();
 
-                _participant.WriteValue(txid, key, value);
-            }
+            _participant.WriteValue(txid, key, value);
         }
 
         public void PrepareTransaction(int txid)
         {
-            lock (this)
-            {
-                WaitIfFrozen();
+            WaitIfFrozen();
 
-                _participant.PrepareTransaction(txid);
-            }
+            _participant.PrepareTransaction(txid);
         }
 
         public void CommitTransaction(int txid)
         {
-            lock (this)
-            {
-                WaitIfFrozen();
+            WaitIfFrozen();
 
-                _participant.CommitTransaction(txid);
-            }
+            _participant.CommitTransaction(txid);
         }
 
         public void AbortTransaction(int txid)
         {
-            lock (this)
-            {
-                WaitIfFrozen();
+            WaitIfFrozen();
 
-                _participant.AbortTransaction(txid);
-            }
+            _participant.AbortTransaction(txid);
         }
 
         private void WaitIfFrozen()

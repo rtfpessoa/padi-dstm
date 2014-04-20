@@ -2,7 +2,7 @@
 
 namespace PADI_DSTM
 {
-    public class PadInt : IPadInt
+    public class PadInt
     {
         private readonly IServer _server;
         private readonly int _txid;

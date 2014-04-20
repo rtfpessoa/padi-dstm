@@ -34,13 +34,16 @@ namespace ServerLib.Transactions
 
             foreach (int padInt in _txWriteSet[txid])
             {
-                if (!_padIntLocks.Contains(padInt))
+                lock (this)
                 {
-                    _padIntLocks.Add(padInt);
-                }
-                else
-                {
-                    throw new TxException();
+                    if (!_padIntLocks.Contains(padInt))
+                    {
+                        _padIntLocks.Add(padInt);
+                    }
+                    else
+                    {
+                        throw new TxException();
+                    }
                 }
             }
 
