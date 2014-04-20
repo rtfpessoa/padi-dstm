@@ -8,6 +8,7 @@ namespace ServerLib.Transactions
 {
     public class Participant : MarshalByRefObject, IParticipant
     {
+        private readonly HashSet<int> _commitedWaitingList = new HashSet<int>();
         private readonly HashSet<int> _padIntLocks = new HashSet<int>();
         private readonly int _serverId;
         private readonly Dictionary<int, int> _startTxids = new Dictionary<int, int>();
@@ -79,9 +80,12 @@ namespace ServerLib.Transactions
                 _padIntLocks.Remove(padInt);
             }
 
-            if (_biggestCommitedTxid < txid)
+            lock (this)
             {
-                _biggestCommitedTxid = txid;
+                if (AllBeforeCommited(txid))
+                {
+                    _biggestCommitedTxid = txid;
+                }
             }
 
             Clean(txid);
@@ -257,6 +261,22 @@ namespace ServerLib.Transactions
         {
             return _coordinator ??
                    (_coordinator = (ICoordinator) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl));
+        }
+
+        private bool AllBeforeCommited(int txid)
+        {
+            for (int tx = _biggestCommitedTxid + 1; tx < txid; tx++)
+            {
+                if (!_commitedWaitingList.Contains(tx))
+                {
+                    return false;
+                }
+
+                _biggestCommitedTxid = tx;
+                _commitedWaitingList.Remove(tx);
+            }
+
+            return true;
         }
     }
 }
