@@ -10,13 +10,7 @@ namespace MainServer
     {
         private readonly List<int> _registry = new List<int>();
         private int _serverUidGenerator;
-
-        public int AddServer()
-        {
-            int uid = _serverUidGenerator++;
-            _registry.Add(uid);
-            return uid;
-        }
+        private int _version;
 
         public void RemoveServer(int uid)
         {
@@ -41,6 +35,21 @@ namespace MainServer
             }
 
             return result;
+        }
+
+        public ServerInit AddServer()
+        {
+            int uid = _serverUidGenerator++;
+            _registry.Add(uid);
+
+            int version = _version++;
+            foreach (int serverId in _registry)
+            {
+                var server = (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(serverId));
+                server.SetVersion(version);
+            }
+
+            return new ServerInit(uid, version);
         }
     }
 }

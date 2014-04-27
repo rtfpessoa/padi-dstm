@@ -14,13 +14,13 @@ namespace Server
             ChannelServices.RegisterChannel(channelServ, true);
 
             var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl);
-            int serverId = mainServer.AddServer();
+            ServerInit serverInit = mainServer.AddServer();
 
             channelServ.StopListening(null);
             ChannelServices.UnregisterChannel(channelServ);
 
-            var server = new Server(serverId);
-            channelServ = new TcpChannel(Config.GetServerPort(serverId));
+            var server = new Server(serverInit.GetUuid(), serverInit.GetVersion());
+            channelServ = new TcpChannel(Config.GetServerPort(serverInit.GetUuid()));
             ChannelServices.RegisterChannel(channelServ, true);
             RemotingServices.Marshal(server, Config.RemoteServerObjName);
 

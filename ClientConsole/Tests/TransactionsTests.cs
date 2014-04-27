@@ -21,8 +21,8 @@ namespace ClientConsole.Tests
 
             int txid1 = mainServer.StartTransaction();
             int txid2 = mainServer.StartTransaction();
-            server.WriteValue(txid1, 1, 1);
-            server.WriteValue(txid2, 1, 2);
+            server.WriteValue(0, txid1, 1, 1);
+            server.WriteValue(0, txid2, 1, 2);
             mainServer.CommitTransaction(txid1);
             mainServer.CommitTransaction(txid2);
 
@@ -45,9 +45,9 @@ namespace ClientConsole.Tests
             var server = (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(0));
 
             int txid = mainServer.StartTransaction();
-            server.WriteValue(txid, 1, 1);
+            server.WriteValue(0, txid, 1, 1);
             server.Freeze();
-            server.WriteValue(txid, 1, 2);
+            server.WriteValue(0, txid, 1, 2);
             Console.WriteLine("Waiting for recover. Press to start:");
             Console.ReadLine();
             server.Recover();

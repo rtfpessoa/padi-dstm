@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using CommonTypes;
 
 namespace ServerLib.NameRegistry
 {
     public interface INameRegistry
     {
-        int AddServer();
+        ServerInit AddServer();
 
         void RemoveServer(int uid);
 

@@ -17,12 +17,12 @@ namespace PADI_DSTM
 
         public int Read()
         {
-            return _server.ReadValue(_txid, _uid);
+            return _server.ReadValue(_server.GetVersion(), _txid, _uid);
         }
 
         public void Write(int value)
         {
-            _server.WriteValue(_txid, _uid, value);
+            _server.WriteValue(_server.GetVersion(), _txid, _uid, value);
         }
     }
 }

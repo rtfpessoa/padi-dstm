@@ -14,7 +14,7 @@ namespace CommonTypes
         /// <exception cref="TxException"></exception>
         void AbortTransaction(int txid);
 
-        int AddServer();
+        ServerInit AddServer();
 
         void RemoveServer(int serverId);
 

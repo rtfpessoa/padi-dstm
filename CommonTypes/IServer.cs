@@ -3,10 +3,12 @@
     public interface IServer
     {
         /// <exception cref="TxException"> </exception>
-        int ReadValue(int txid, int key);
+        /// <exception cref="WrongVersionException"></exception>
+        int ReadValue(int version, int txid, int key);
 
         /// <exception cref="TxException"> </exception>
-        void WriteValue(int txid, int key, int value);
+        /// <exception cref="WrongVersionException"></exception>
+        void WriteValue(int version, int txid, int key, int value);
 
         /// <exception cref="TxException"> </exception>
         void PrepareTransaction(int txid);
@@ -26,5 +28,9 @@
         bool Recover();
 
         void DumpState();
+
+        void SetVersion(int version);
+
+        int GetVersion();
     }
 }

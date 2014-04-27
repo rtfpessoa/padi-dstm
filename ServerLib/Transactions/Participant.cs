@@ -96,6 +96,14 @@ namespace ServerLib.Transactions
             Clean(txid, true);
         }
 
+        public void DumpState()
+        {
+            foreach (var pair in _storage.GetValues())
+            {
+                Console.WriteLine("[Key:{0} | Value:{1}]", pair.Key, pair.Value);
+            }
+        }
+
         public int ReadValue(int txid, int key)
         {
             DoJoinTransaction(txid);
@@ -152,14 +160,6 @@ namespace ServerLib.Transactions
             ReadValue(txid, key);
 
             Console.WriteLine("Tx {0} wrote the PadInt {1} with value {2}", txid, key, value);
-        }
-
-        public void DumpState()
-        {
-            foreach (var pair in _storage.GetValues())
-            {
-                Console.WriteLine("[Key:{0} | Value:{1}]", pair.Key, pair.Value);
-            }
         }
 
         /*

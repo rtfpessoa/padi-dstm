@@ -6,16 +6,18 @@ using ServerLib.Transactions;
 
 namespace Server
 {
-    internal class Server : MarshalByRefObject, IServer, IParticipant
+    internal class Server : MarshalByRefObject, IServer
     {
         private readonly IParticipant _participant;
         private readonly int _serverId;
         private bool _isFrozen;
+        private int _version;
 
-        public Server(int serverId)
+        public Server(int serverId, int version)
         {
             _serverId = serverId;
             _participant = new Participant(serverId, new KeyValueStorage());
+            _version = version;
         }
 
         public void DumpState()
@@ -57,16 +59,26 @@ namespace Server
             return true;
         }
 
-        public int ReadValue(int txid, int key)
+        public int ReadValue(int version, int txid, int key)
         {
             WaitIfFrozen();
+
+            if (_version != version)
+            {
+                throw new WrongVersionException();
+            }
 
             return _participant.ReadValue(txid, key);
         }
 
-        public void WriteValue(int txid, int key, int value)
+        public void WriteValue(int version, int txid, int key, int value)
         {
             WaitIfFrozen();
+
+            if (_version != version)
+            {
+                throw new WrongVersionException();
+            }
 
             _participant.WriteValue(txid, key, value);
         }
@@ -90,6 +102,16 @@ namespace Server
             WaitIfFrozen();
 
             _participant.AbortTransaction(txid);
+        }
+
+        public void SetVersion(int version)
+        {
+            _version = version;
+        }
+
+        public int GetVersion()
+        {
+            return _version;
         }
 
         private void WaitIfFrozen()
