@@ -18,10 +18,10 @@ namespace CommonTypes
 
         void RemoveServer(int serverId);
 
-        List<int> ListServers();
-
-        /* Function to give to the client the all Server Status */
+        Dictionary<int, RegistryEntry> ListServers();
 
         bool GetServerStatus();
+
+        int GetVersion();
     }
 }

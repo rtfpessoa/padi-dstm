@@ -16,7 +16,8 @@ namespace PADI_DSTM
         /* Variavel com o identificador da transacao actual */
         private static int _currentTxInt;
         /* Variavel com a lista de servidores */
-        private static List<int> _serverList = new List<int>();
+        private static Dictionary<int, RegistryEntry> _serverList = new Dictionary<int, RegistryEntry>();
+        private static int _version;
 
         /*
          * INTERACTION WITH SERVERS
@@ -40,6 +41,8 @@ namespace PADI_DSTM
 
                 /* 2. Temos que obter a list de servidores do sistema dada pelo MS */
                 _serverList = mainServer.ListServers();
+
+                _version = mainServer.GetVersion();
 
                 /* DEBUG PROPOSES*/
                 for (int i = 0; i < _serverList.Count; i++)
@@ -323,15 +326,21 @@ namespace PADI_DSTM
             return accPadInt;
         }
 
-        private static PadInt GetPadInt(int uid)
+        internal static PadInt GetPadInt(int uid)
         {
             int serverNum = uid%_serverList.Count;
-            int serverId = _serverList.ToArray()[serverNum];
-            string serverUrl = Config.GetServerUrl(serverId);
+
+            RegistryEntry serverEntry;
+            if (_serverList.TryGetValue(serverNum, out serverEntry) && !serverEntry.Active)
+            {
+                serverNum = serverEntry.Parent;
+            }
+
+            string serverUrl = Config.GetServerUrl(serverNum);
 
             var server = (IServer) Activator.GetObject(typeof (IServer), serverUrl);
 
-            return new PadInt(_currentTxInt, uid, server);
+            return new PadInt(_currentTxInt, uid, server, _version);
         }
     }
 }

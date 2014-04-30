@@ -70,7 +70,7 @@ namespace ServerLib.Transactions
             if (participants != null)
                 foreach (ParticipantProxy participant in participants)
                 {
-                    IParticipant proxy = participant.GetProxy();
+                    IPartitipantProxy proxy = participant.GetProxy();
 
                     try
                     {
@@ -127,7 +127,7 @@ namespace ServerLib.Transactions
 
             foreach (ParticipantProxy participant in participants)
             {
-                IParticipant proxy = participant.GetProxy();
+                IPartitipantProxy proxy = participant.GetProxy();
                 try
                 {
                     proxy.PrepareTransaction(txid);
@@ -169,7 +169,7 @@ namespace ServerLib.Transactions
 
         private bool AbortTransactionForParticipant(int txid, ParticipantProxy participant)
         {
-            IParticipant proxy = participant.GetProxy();
+            IPartitipantProxy proxy = participant.GetProxy();
 
             try
             {

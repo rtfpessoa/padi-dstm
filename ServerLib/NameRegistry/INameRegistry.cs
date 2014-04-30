@@ -9,6 +9,6 @@ namespace ServerLib.NameRegistry
 
         void RemoveServer(int uid);
 
-        List<int> ListServers();
+        Dictionary<int, RegistryEntry> ListServers();
     }
 }

@@ -1,9 +1,9 @@
 ﻿using System;
 using PADI_DSTM;
 
-class SampleApp
+internal class SampleApp
 {
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
         bool res;
         PadInt pi_a, pi_b;

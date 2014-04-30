@@ -13,23 +13,23 @@ namespace ServerLib.Transactions
             Endpoint = endpoint;
         }
 
-        public IParticipant GetProxy()
+        public IPartitipantProxy GetProxy()
         {
             return ParticipantProxyCache.GetParticipant(Endpoint);
         }
 
         private static class ParticipantProxyCache
         {
-            private static readonly Dictionary<string, IParticipant> Participants =
-                new Dictionary<string, IParticipant>();
+            private static readonly Dictionary<string, IPartitipantProxy> Participants =
+                new Dictionary<string, IPartitipantProxy>();
 
-            public static IParticipant GetParticipant(string endpoint)
+            public static IPartitipantProxy GetParticipant(string endpoint)
             {
-                IParticipant participant;
+                IPartitipantProxy participant;
 
                 if (!Participants.TryGetValue(endpoint, out participant))
                 {
-                    participant = (IParticipant) Activator.GetObject(typeof (IParticipant), endpoint);
+                    participant = (IPartitipantProxy) Activator.GetObject(typeof (IPartitipantProxy), endpoint);
                 }
 
                 return participant;

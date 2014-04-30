@@ -6,7 +6,7 @@ using ServerLib.Transactions;
 
 namespace Server
 {
-    internal class Server : MarshalByRefObject, IServer
+    internal class Server : MarshalByRefObject, IServer, IPartitipantProxy
     {
         private readonly IParticipant _participant;
         private readonly int _serverId;
@@ -28,7 +28,7 @@ namespace Server
         public bool Status()
         {
             Console.WriteLine("########## STATE DUMP ##########");
-            Console.WriteLine("[Server: {0}] OK: {1}", _serverId, !_isFrozen);
+            Console.WriteLine("[Server: {0}] Version: {1} | OK: {2}", _serverId, _version, !_isFrozen);
             _participant.DumpState();
             Console.WriteLine("################################");
 

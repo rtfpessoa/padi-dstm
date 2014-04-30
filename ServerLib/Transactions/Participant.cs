@@ -8,7 +8,6 @@ namespace ServerLib.Transactions
 {
     public class Participant : MarshalByRefObject, IParticipant
     {
-        private readonly HashSet<int> _commitedWaitingList = new HashSet<int>();
         private readonly HashSet<int> _padIntLocks = new HashSet<int>();
         private readonly int _serverId;
         private readonly Dictionary<int, int> _startTxids = new Dictionary<int, int>();
@@ -82,7 +81,7 @@ namespace ServerLib.Transactions
 
             lock (this)
             {
-                if (AllBeforeCommited(txid))
+                if (txid > _biggestCommitedTxid)
                 {
                     _biggestCommitedTxid = txid;
                 }
@@ -110,7 +109,9 @@ namespace ServerLib.Transactions
 
             int value;
 
-            if (!_storage.HasValue(key))
+            Dictionary<int, int> txPadInts;
+            if (!_storage.HasValue(key) &&
+                _txPadInts.TryGetValue(txid, out txPadInts) && !txPadInts.ContainsKey(key))
             {
                 throw new TxException();
             }
@@ -154,8 +155,6 @@ namespace ServerLib.Transactions
 
             _txPadInts[txid][key] = value;
 
-            _storage.WriteValue(key, value);
-
             /* Fake read */
             ReadValue(txid, key);
 
@@ -193,12 +192,15 @@ namespace ServerLib.Transactions
 
             for (int overlapTxid = startTxid + 1; overlapTxid <= endTxid; overlapTxid++)
             {
-                HashSet<int> overlapTxWrites;
-                if (overlapTxid == txid || !_txWriteSet.TryGetValue(overlapTxid, out overlapTxWrites)) continue;
-
-                if (reads != null && overlapTxWrites.Intersect(reads).Any())
+                if (!_txReadSet.ContainsKey(overlapTxid))
                 {
-                    return true;
+                    HashSet<int> overlapTxWrites;
+                    if (overlapTxid == txid || !_txWriteSet.TryGetValue(overlapTxid, out overlapTxWrites)) continue;
+
+                    if (reads != null && overlapTxWrites.Intersect(reads).Any())
+                    {
+                        return true;
+                    }
                 }
             }
 
@@ -261,22 +263,6 @@ namespace ServerLib.Transactions
         {
             return _coordinator ??
                    (_coordinator = (ICoordinator) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl));
-        }
-
-        private bool AllBeforeCommited(int txid)
-        {
-            for (int tx = _biggestCommitedTxid + 1; tx < txid; tx++)
-            {
-                if (!_commitedWaitingList.Contains(tx))
-                {
-                    return false;
-                }
-
-                _biggestCommitedTxid = tx;
-                _commitedWaitingList.Remove(tx);
-            }
-
-            return true;
         }
     }
 }
