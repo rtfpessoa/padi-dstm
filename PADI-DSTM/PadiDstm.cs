@@ -34,6 +34,11 @@ namespace PADI_DSTM
 
             Console.WriteLine("[Client.Init] Entering Client.Init");
 
+            return UpdateServers();
+        }
+
+        internal static bool UpdateServers()
+        {
             try
             {
                 /* 1. Tem de ser criada a ligação com o servidor principal */

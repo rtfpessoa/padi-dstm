@@ -28,7 +28,7 @@ namespace PADI_DSTM
             }
             catch (WrongVersionException)
             {
-                PadiDstm.Init();
+                PadiDstm.UpdateServers();
                 PadInt newPadInt = PadiDstm.GetPadInt(_uid);
                 _server = newPadInt._server;
                 _version = newPadInt._version;
@@ -47,7 +47,7 @@ namespace PADI_DSTM
             }
             catch (WrongVersionException)
             {
-                PadiDstm.Init();
+                PadiDstm.UpdateServers();
                 PadInt newPadInt = PadiDstm.GetPadInt(_uid);
                 _server = newPadInt._server;
                 _version = newPadInt._version;
