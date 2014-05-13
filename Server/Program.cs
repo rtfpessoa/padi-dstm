@@ -19,7 +19,7 @@ namespace Server
             channelServ.StopListening(null);
             ChannelServices.UnregisterChannel(channelServ);
 
-            var server = new Server(serverInit.GetUuid(), serverInit.GetVersion());
+            var server = new Server(serverInit);
             channelServ = new TcpChannel(Config.GetServerPort(serverInit.GetUuid()));
             ChannelServices.RegisterChannel(channelServ, true);
             RemotingServices.Marshal(server, Config.RemoteServerObjName);

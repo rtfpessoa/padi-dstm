@@ -48,41 +48,50 @@ namespace MainServer
             {
                 int uid = _serverUidGenerator++;
                 int version = ++_version;
+                int parent = -1;
 
+                /* First server case */
                 if (_registry.Count == 0)
                 {
-                    _registry.Add(uid, new RegistryEntry(-1, true));
+                    _registry.Add(uid, new RegistryEntry(parent, true));
                 }
                 else
                 {
                     RegistryEntry entry;
                     if (_registry.TryGetValue(uid, out entry))
                     {
+                        /* Enable the disabled child */
                         entry.Active = true;
+                        parent = entry.Parent;
                     }
                     else
                     {
+                        /* Create a child for each current server */
                         int serverUid = uid;
                         int registrySize = _registry.Count;
                         for (int i = 0; i < registrySize; i++)
                         {
                             _registry.Add(serverUid, new RegistryEntry(i, (serverUid == uid)));
                             serverUid++;
+                            
+                            if (serverUid == uid)
+                            {
+                                parent = i;
+                            }
                         }
                     }
 
-                    foreach (var serverEntry in _registry)
-                    {
-                        if (serverEntry.Key != uid)
-                        {
-                            var server =
-                                (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(serverEntry.Key));
-                            server.SetVersion(version);
-                        }
-                    }
+                    /* Update parent children and update parent version */
+                    RegistryEntry parentEntry;
+                    _registry.TryGetValue(uid, out parentEntry);
+                    parentEntry.Children.Add(uid);
+                    /* TODO: Update only after data sync */
+                    var server =
+                        (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(parent));
+                    server.SetVersion(version);
                 }
 
-                return new ServerInit(uid, version);
+                return new ServerInit(uid, version, parent);
             }
         }
 

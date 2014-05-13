@@ -20,12 +20,14 @@ namespace ServerLib.Transactions
 
         private int _biggestCommitedTxid = -1;
         private ICoordinator _coordinator;
+        private readonly int _parent;
 
-        public Participant(int serverId, IStorage storage)
+        public Participant(ServerInit serverInit, IStorage storage)
         {
             _storage = storage;
             _coordinator = (ICoordinator) Activator.GetObject(typeof (ICoordinator), Config.RemoteMainserverUrl);
-            _serverId = serverId;
+            _serverId = serverInit.GetUuid();
+            _parent = serverInit.GetParent();
         }
 
         public void PrepareTransaction(int txid)

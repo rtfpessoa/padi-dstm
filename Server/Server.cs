@@ -13,11 +13,11 @@ namespace Server
         private bool _isFrozen;
         private int _version;
 
-        public Server(int serverId, int version)
+        public Server(ServerInit serverInit)
         {
-            _serverId = serverId;
-            _participant = new Participant(serverId, new KeyValueStorage());
-            _version = version;
+            _serverId = serverInit.GetUuid();
+            _participant = new Participant(serverInit, new KeyValueStorage());
+            _version = serverInit.GetVersion();
         }
 
         public void DumpState()
@@ -63,7 +63,7 @@ namespace Server
         {
             WaitIfFrozen();
 
-            if (_version != version)
+            if (_version < version)
             {
                 throw new WrongVersionException();
             }
@@ -75,7 +75,7 @@ namespace Server
         {
             WaitIfFrozen();
 
-            if (_version != version)
+            if (_version < version)
             {
                 throw new WrongVersionException();
             }

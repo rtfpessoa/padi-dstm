@@ -9,10 +9,13 @@ namespace CommonTypes
 
         private readonly int _version;
 
-        public ServerInit(int uuid, int version)
+        private readonly int _parent;
+
+        public ServerInit(int uuid, int version, int parent)
         {
             _uuid = uuid;
             _version = version;
+            _parent = parent;
         }
 
         public int GetUuid()
@@ -23,6 +26,11 @@ namespace CommonTypes
         public int GetVersion()
         {
             return _version;
+        }
+
+        public int GetParent()
+        {
+            return _parent;
         }
     }
 }
