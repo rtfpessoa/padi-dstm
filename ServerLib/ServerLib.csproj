@@ -40,7 +40,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="NameRegistry\INameRegistry.cs" />
-    <Compile Include="Storage\IStorage.cs" />
     <Compile Include="Storage\Storage.cs" />
     <Compile Include="Transactions\Coordinator.cs" />
     <Compile Include="Transactions\IParticipant.cs" />

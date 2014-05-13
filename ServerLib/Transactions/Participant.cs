@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using CommonTypes;
-using ServerLib.Storage;
 
 namespace ServerLib.Transactions
 {
@@ -11,7 +10,7 @@ namespace ServerLib.Transactions
         private readonly HashSet<int> _padIntLocks = new HashSet<int>();
         private readonly int _serverId;
         private readonly Dictionary<int, int> _startTxids = new Dictionary<int, int>();
-        private readonly IStorage _storage;
+        private IStorage _storage;
 
         private readonly Dictionary<int, Dictionary<int, int>> _txPadInts = new Dictionary<int, Dictionary<int, int>>();
 
@@ -21,13 +20,16 @@ namespace ServerLib.Transactions
         private int _biggestCommitedTxid = -1;
         private ICoordinator _coordinator;
         private readonly int _parent;
+        private HashSet<int> _children;
 
         public Participant(ServerInit serverInit, IStorage storage)
         {
-            _storage = storage;
             _coordinator = (ICoordinator) Activator.GetObject(typeof (ICoordinator), Config.RemoteMainserverUrl);
             _serverId = serverInit.GetUuid();
             _parent = serverInit.GetParent();
+            _children = new HashSet<int>();
+            _storage = storage;
+            
         }
 
         public void PrepareTransaction(int txid)
@@ -161,6 +163,17 @@ namespace ServerLib.Transactions
             ReadValue(txid, key);
 
             Console.WriteLine("Tx {0} wrote the PadInt {1} with value {2}", txid, key, value);
+        }
+
+        public IStorage AddChild(int uid)
+        {
+            _children.Add(uid);
+            return _storage;
+        }
+
+        public void SetStorage(IStorage storage)
+        {
+            _storage = storage;
         }
 
         /*

@@ -32,5 +32,7 @@
         void SetVersion(int version);
 
         int GetVersion();
+
+        IStorage AddChild(int uid);
     }
 }

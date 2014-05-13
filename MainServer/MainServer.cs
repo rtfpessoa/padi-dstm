@@ -72,12 +72,13 @@ namespace MainServer
                         for (int i = 0; i < registrySize; i++)
                         {
                             _registry.Add(serverUid, new RegistryEntry(i, (serverUid == uid)));
-                            serverUid++;
                             
                             if (serverUid == uid)
                             {
                                 parent = i;
                             }
+
+                            serverUid++;
                         }
                     }
 
@@ -85,10 +86,6 @@ namespace MainServer
                     RegistryEntry parentEntry;
                     _registry.TryGetValue(uid, out parentEntry);
                     parentEntry.Children.Add(uid);
-                    /* TODO: Update only after data sync */
-                    var server =
-                        (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(parent));
-                    server.SetVersion(version);
                 }
 
                 return new ServerInit(uid, version, parent);

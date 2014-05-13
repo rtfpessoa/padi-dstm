@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading;
 using CommonTypes;
-using ServerLib.Storage;
 using ServerLib.Transactions;
+using ServerLib.Storage;
 
 namespace Server
 {
@@ -112,6 +112,18 @@ namespace Server
         public int GetVersion()
         {
             return _version;
+        }
+
+        public IStorage AddChild(int uid)
+        {
+            WaitIfFrozen();
+
+            return _participant.AddChild(uid);
+        }
+
+        public void SetStorage(IStorage storage)
+        {
+            _participant.SetStorage(storage);
         }
 
         private void WaitIfFrozen()

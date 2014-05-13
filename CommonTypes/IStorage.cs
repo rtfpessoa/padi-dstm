@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ServerLib.Storage
+namespace CommonTypes
 {
     public interface IStorage
     {
