@@ -116,6 +116,9 @@ namespace MainServer
             RegistryEntry entry;
             _registry.TryGetValue(uid, out entry);
             entry.Active = false;
+
+            var server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(entry.Parent));
+            server.RemoveChild(uid);
         }
     }
 }
