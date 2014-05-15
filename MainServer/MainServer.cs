@@ -4,7 +4,10 @@ using ServerLib.NameRegistry;
 using ServerLib.Transactions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.IO;
+using System.Collections;
 
 namespace MainServer
 {
@@ -117,8 +120,21 @@ namespace MainServer
             _registry.TryGetValue(uid, out entry);
             entry.Active = false;
 
-            var server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(entry.Parent));
-            server.RemoveChild(uid);
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var serverReleaseExe = currentDirectory + "..\\..\\..\\Server\\bin\\Release\\Server.exe";
+            var serverDebugExe = currentDirectory + "..\\..\\..\\Server\\bin\\Debug\\Server.exe";
+
+            if (Directory.Exists(serverReleaseExe))
+            {
+                Process.Start(serverReleaseExe);
+                return;
+            }
+
+            if (Directory.Exists(serverDebugExe))
+            {
+                Process.Start(serverDebugExe);
+                return;
+            }
         }
     }
 }

@@ -302,6 +302,7 @@ namespace Server
                     {
                         Console.WriteLine("Ping to child:{0} failed ... " + DateTime.Now.ToString(), child);
                         IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
+                        RemoveChild(_parent);
                         mainServer.ReportDead(child);
                     }
                 }
@@ -318,6 +319,7 @@ namespace Server
                 {
                     Console.WriteLine("Ping to parent:{0} failed ... " + DateTime.Now.ToString(), _parent);
                     IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
+                    RemoveChild(_parent);
                     mainServer.ReportDead(_parent);
                 }
             }
