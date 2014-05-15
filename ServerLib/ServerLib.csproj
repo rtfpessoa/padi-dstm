@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="NameRegistry\INameRegistry.cs" />
     <Compile Include="Replication\IReplica.cs" />
+    <Compile Include="Replication\NoReplicationAvailableException.cs" />
     <Compile Include="Storage\Storage.cs" />
     <Compile Include="Transactions\Coordinator.cs" />
     <Compile Include="Transactions\IParticipant.cs" />
