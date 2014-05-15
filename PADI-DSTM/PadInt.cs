@@ -1,4 +1,5 @@
 ﻿using CommonTypes;
+using CommonTypes.NameRegistry;
 
 namespace PADI_DSTM
 {

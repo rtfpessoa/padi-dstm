@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace CommonTypes
+namespace CommonTypes.NameRegistry
 {
     [Serializable]
     public class WrongVersionException : ApplicationException

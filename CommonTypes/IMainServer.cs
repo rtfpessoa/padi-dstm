@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using CommonTypes.NameRegistry;
+using System.Collections.Generic;
 
 namespace CommonTypes
 {

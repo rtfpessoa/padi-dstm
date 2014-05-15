@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace CommonTypes
+namespace CommonTypes.Transactions
 {
     [Serializable]
     public class TxException : ApplicationException

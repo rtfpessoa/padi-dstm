@@ -1,4 +1,6 @@
 ﻿using CommonTypes;
+using CommonTypes.NameRegistry;
+using CommonTypes.Transactions;
 using ServerLib;
 using ServerLib.Storage;
 using ServerLib.Transactions;
@@ -15,6 +17,7 @@ namespace Server
 
         private readonly IParticipant _participant;
         private readonly int _serverId;
+        private int _serverCount;
         private bool _isFrozen;
         private int _version;
         private readonly int _parent;
@@ -27,6 +30,7 @@ namespace Server
         public Server(ServerInit serverInit)
         {
             _serverId = serverInit.GetUuid();
+            _serverCount = serverInit.GetServerCount();
             _participant = new Participant(_serverId, new KeyValueStorage());
             _version = serverInit.GetVersion();
             _parent = serverInit.GetParent();
@@ -84,7 +88,11 @@ namespace Server
 
             WaitIfSplitLocked();
 
-            //if !my value
+            if (ConsistentHashCalculator.IsMyPadInt(_serverCount, key, _serverId))
+            {
+                // check if replica is dead
+                // if its dead tell master
+            }
 
             int value = ParticipantReadValue(version, txid, key);
             try
@@ -121,7 +129,11 @@ namespace Server
 
             WaitIfSplitLocked();
 
-            //if !my value
+            if (ConsistentHashCalculator.IsMyPadInt(_serverCount, key, _serverId))
+            {
+                // check if replica is dead
+                // if its dead tell master
+            }
 
             ParticipantWriteValue(version, txid, key, value);
             try
@@ -193,7 +205,18 @@ namespace Server
 
             _children.Add(uid);
 
+            _serverCount = _serverCount + 1;
+
             return _participant.GetStatus();
+        }
+
+        public void RemoveChild(int uid)
+        {
+            WaitIfFrozen();
+
+            _children.Remove(uid);
+
+            _serverCount = _serverCount - 1;
         }
 
         public void SetStatus(ParticipantStatus storage)

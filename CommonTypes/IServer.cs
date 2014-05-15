@@ -1,4 +1,6 @@
-﻿namespace CommonTypes
+﻿using CommonTypes.Transactions;
+
+namespace CommonTypes
 {
     public interface IServer
     {
@@ -38,6 +40,8 @@
         int GetVersion();
 
         ParticipantStatus AddChild(int uid);
+
+        void RemoveChild(int uid);
 
         bool AreYouAlive();
 

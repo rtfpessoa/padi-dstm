@@ -1,10 +1,12 @@
-﻿using System;
+﻿using CommonTypes;
+using CommonTypes.NameRegistry;
+using CommonTypes.Transactions;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
-using CommonTypes;
-using System.Collections;
 
 namespace PADI_DSTM
 {
@@ -336,7 +338,7 @@ namespace PADI_DSTM
 
         internal static PadInt GetPadInt(int uid)
         {
-            int serverNum = uid % _serverList.Count;
+            int serverNum = ConsistentHashCalculator.GetServerIdForPadInt(_serverList.Count, uid);
 
             RegistryEntry serverEntry;
             if (_serverList.TryGetValue(serverNum, out serverEntry) && !serverEntry.Active)

@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using CommonTypes;
+﻿using CommonTypes;
+using CommonTypes.NameRegistry;
+using System.Collections.Generic;
 
 namespace ServerLib.NameRegistry
 {

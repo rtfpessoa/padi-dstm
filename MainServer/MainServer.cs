@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using CommonTypes;
+﻿using CommonTypes;
+using CommonTypes.NameRegistry;
 using ServerLib.NameRegistry;
 using ServerLib.Transactions;
+using System;
+using System.Collections.Generic;
 
 namespace MainServer
 {
@@ -35,7 +36,7 @@ namespace MainServer
 
             foreach (var serverEntry in _registry)
             {
-                var server = (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(serverEntry.Key));
+                var server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(serverEntry.Key));
                 result &= server.Status();
             }
 
@@ -72,7 +73,7 @@ namespace MainServer
                         for (int i = 0; i < registrySize; i++)
                         {
                             _registry.Add(serverUid, new RegistryEntry(i, (serverUid == uid)));
-                            
+
                             if (serverUid == uid)
                             {
                                 parent = i;
@@ -88,7 +89,7 @@ namespace MainServer
                     parentEntry.Children.Add(uid);
                 }
 
-                return new ServerInit(uid, version, parent);
+                return new ServerInit(uid, version, parent, _registry.Count);
             }
         }
 

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace CommonTypes
+namespace CommonTypes.Storage
 {
     public interface IStorage
     {

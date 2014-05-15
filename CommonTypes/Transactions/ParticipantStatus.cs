@@ -1,7 +1,8 @@
-﻿using System;
+﻿using CommonTypes.Storage;
+using System;
 using System.Collections.Generic;
 
-namespace CommonTypes
+namespace CommonTypes.Transactions
 {
     [Serializable]
     public class ParticipantStatus

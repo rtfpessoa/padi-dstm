@@ -1,6 +1,7 @@
-﻿using System;
+﻿using CommonTypes;
+using CommonTypes.Transactions;
+using System;
 using System.Collections.Generic;
-using CommonTypes;
 
 namespace ServerLib.Transactions
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace CommonTypes
+namespace CommonTypes.NameRegistry
 {
     [Serializable]
     public class RegistryEntry
