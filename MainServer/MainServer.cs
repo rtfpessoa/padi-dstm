@@ -114,27 +114,33 @@ namespace MainServer
 
         public void ReportDead(int uid)
         {
-            Console.WriteLine("Server {0} reported dead!", uid);
-            _deadServers.Add(uid);
-            RegistryEntry entry;
-            _registry.TryGetValue(uid, out entry);
-            entry.Active = false;
-
-            var currentDirectory = Directory.GetCurrentDirectory();
-            var serverReleaseDir = currentDirectory + "\\..\\..\\..\\Server\\bin\\Release";
-            var serverDebugDir = currentDirectory + "\\..\\..\\..\\Server\\bin\\Debug";
-            var serverExe = "\\Server.exe";
-
-            if (Directory.Exists(serverReleaseDir))
+            lock (this)
             {
-                Process.Start(serverReleaseDir + serverExe);
-                return;
-            }
+                if (!_deadServers.Contains(uid))
+                {
+                    Console.WriteLine("Server {0} reported dead!", uid);
+                    _deadServers.Add(uid);
+                    RegistryEntry entry;
+                    _registry.TryGetValue(uid, out entry);
+                    entry.Active = false;
 
-            if (Directory.Exists(serverDebugDir))
-            {
-                Process.Start(serverDebugDir + serverExe);
-                return;
+                    var currentDirectory = Directory.GetCurrentDirectory();
+                    var serverReleaseDir = currentDirectory + "\\..\\..\\..\\Server\\bin\\Release";
+                    var serverDebugDir = currentDirectory + "\\..\\..\\..\\Server\\bin\\Debug";
+                    var serverExe = "\\Server.exe";
+
+                    if (Directory.Exists(serverReleaseDir))
+                    {
+                        Process.Start(serverReleaseDir + serverExe);
+                        return;
+                    }
+
+                    if (Directory.Exists(serverDebugDir))
+                    {
+                        Process.Start(serverDebugDir + serverExe);
+                        return;
+                    }
+                }
             }
         }
     }
