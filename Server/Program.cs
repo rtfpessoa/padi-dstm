@@ -24,7 +24,7 @@ namespace Server
             var server = new Server(serverInit);
             IDictionary properties = new Hashtable();
             properties["port"] = Config.GetServerPort(serverInit.GetUuid());
-            properties["timeout"] = 5000;
+            properties["timeout"] = Config.NoInvocationTimeout;
             channelServ = new TcpChannel(properties, null, null);
             ChannelServices.RegisterChannel(channelServ, false);
             RemotingServices.Marshal(server, Config.RemoteServerObjName);

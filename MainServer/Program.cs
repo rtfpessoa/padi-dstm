@@ -13,7 +13,7 @@ namespace MainServer
         {
             IDictionary properties = new Hashtable();
             properties["port"] = Config.RemoteMainserverPort;
-            properties["timeout"] = 5000;
+            properties["timeout"] = Config.NoInvocationTimeout;
             var channelServ = new TcpChannel(properties, null, null);
             ChannelServices.RegisterChannel(channelServ, false);
             RemotingConfiguration.RegisterWellKnownServiceType(typeof(MainServer), Config.RemoteMainserverObjName,
