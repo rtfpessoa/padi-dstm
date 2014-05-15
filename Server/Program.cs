@@ -11,11 +11,8 @@ namespace Server
     {
         private static void Main(string[] args)
         {
-            IDictionary properties = new Hashtable();
-            properties["timeout"] = 5000;
-            properties["retryCount"] = 2;
-            var channelServ = new TcpChannel(properties, null, null);
-            ChannelServices.RegisterChannel(channelServ, true);
+            var channelServ = new TcpChannel();
+            ChannelServices.RegisterChannel(channelServ, false);
 
             var mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
             ServerInit serverInit = mainServer.AddServer();
@@ -24,8 +21,11 @@ namespace Server
             ChannelServices.UnregisterChannel(channelServ);
 
             var server = new Server(serverInit);
-            channelServ = new TcpChannel(Config.GetServerPort(serverInit.GetUuid()));
-            ChannelServices.RegisterChannel(channelServ, true);
+            IDictionary properties = new Hashtable();
+            properties["port"] = Config.GetServerPort(serverInit.GetUuid());
+            properties["timeout"] = 5000;
+            channelServ = new TcpChannel(properties, null, null);
+            ChannelServices.RegisterChannel(channelServ, false);
             RemotingServices.Marshal(server, Config.RemoteServerObjName);
 
             if (serverInit.GetParent() != -1)

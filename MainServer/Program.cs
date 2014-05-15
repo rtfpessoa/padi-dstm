@@ -14,9 +14,8 @@ namespace MainServer
             IDictionary properties = new Hashtable();
             properties["port"] = Config.RemoteMainserverPort;
             properties["timeout"] = 5000;
-            properties["retryCount"] = 2;
             var channelServ = new TcpChannel(properties, null, null);
-            ChannelServices.RegisterChannel(channelServ, true);
+            ChannelServices.RegisterChannel(channelServ, false);
             RemotingConfiguration.RegisterWellKnownServiceType(typeof(MainServer), Config.RemoteMainserverObjName,
                 WellKnownObjectMode.Singleton);
 
