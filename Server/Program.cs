@@ -31,7 +31,12 @@ namespace Server
             if (serverInit.GetParent() != -1)
             {
                 var parent = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(serverInit.GetParent()));
-                server.SetStatus(parent.AddChild(serverInit.GetUuid()));
+                parent.StartSplitLock();
+                server.StartSplitLock();
+                ParticipantStatus status = parent.AddChild(serverInit.GetUuid());
+                server.SetStatus(status);
+                parent.EndSplitLock();
+                server.EndSplitLock();
             }
 
             Console.WriteLine("Press <enter> to exit");

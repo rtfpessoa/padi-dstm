@@ -19,6 +19,7 @@ namespace Server
         private int _version;
         private readonly int _parent;
         private HashSet<int> _children;
+        private bool _isSplitLocked;
 
         private bool _timerRunning;
         private Timer _timerReference;
@@ -32,6 +33,7 @@ namespace Server
             _children = new HashSet<int>();
             _timerRunning = true;
             _timerReference = new Timer(new TimerCallback(TimerTask), this, _fiveSeconds, _fiveSeconds);
+            _isSplitLocked = false;
         }
 
         public void DumpState()
@@ -77,6 +79,8 @@ namespace Server
         {
             WaitIfFrozen();
 
+            WaitIfSplitLocked();
+
             //if !my value
 
             int value = ParticipantReadValue(version, txid, key);
@@ -92,6 +96,8 @@ namespace Server
         public void ReadThrough(int version, int txid, int key)
         {
             WaitIfFrozen();
+
+            WaitIfSplitLocked();
 
             ParticipantReadValue(version, txid, key);
         }
@@ -110,6 +116,8 @@ namespace Server
         {
             WaitIfFrozen();
 
+            WaitIfSplitLocked();
+
             //if !my value
 
             ParticipantWriteValue(version, txid, key, value);
@@ -123,6 +131,8 @@ namespace Server
         public void WriteThrough(int version, int txid, int key, int value)
         {
             WaitIfFrozen();
+
+            WaitIfSplitLocked();
 
             ParticipantWriteValue(version, txid, key, value);
         }
@@ -141,6 +151,8 @@ namespace Server
         {
             WaitIfFrozen();
 
+            WaitIfSplitLocked();
+
             _participant.PrepareTransaction(txid);
         }
 
@@ -148,12 +160,16 @@ namespace Server
         {
             WaitIfFrozen();
 
+            WaitIfSplitLocked();
+
             _participant.CommitTransaction(txid);
         }
 
         public void AbortTransaction(int txid)
         {
             WaitIfFrozen();
+
+            WaitIfSplitLocked();
 
             _participant.AbortTransaction(txid);
         }
@@ -187,6 +203,29 @@ namespace Server
             if (_isFrozen)
             {
                 Monitor.Wait(this);
+            }
+        }
+
+        private void WaitIfSplitLocked()
+        {
+            if (_isSplitLocked)
+            {
+                Monitor.Wait(this);
+            }
+        }
+
+        public void StartSplitLock()
+        {
+            _isSplitLocked = true;
+        }
+
+        public void EndSplitLock()
+        {
+            lock (this)
+            {
+                _isSplitLocked = false;
+
+                Monitor.PulseAll(this);
             }
         }
 

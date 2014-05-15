@@ -40,5 +40,9 @@
         ParticipantStatus AddChild(int uid);
 
         bool AreYouAlive();
+
+        void StartSplitLock();
+
+        void EndSplitLock();
     }
 }
