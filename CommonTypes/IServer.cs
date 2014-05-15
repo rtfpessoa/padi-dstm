@@ -6,9 +6,13 @@
         /// <exception cref="WrongVersionException"></exception>
         int ReadValue(int version, int txid, int key);
 
+        void ReadThrough(int version, int txid, int key);
+
         /// <exception cref="TxException"> </exception>
         /// <exception cref="WrongVersionException"></exception>
         void WriteValue(int version, int txid, int key, int value);
+
+        void WriteThrough(int version, int txid, int key, int value);
 
         /// <exception cref="TxException"> </exception>
         void PrepareTransaction(int txid);

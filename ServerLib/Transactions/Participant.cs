@@ -1,7 +1,7 @@
-﻿using System;
+﻿using CommonTypes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using CommonTypes;
 
 namespace ServerLib.Transactions
 {
@@ -19,17 +19,12 @@ namespace ServerLib.Transactions
 
         private int _biggestCommitedTxid = -1;
         private ICoordinator _coordinator;
-        private readonly int _parent;
-        private HashSet<int> _children;
 
-        public Participant(ServerInit serverInit, IStorage storage)
+        public Participant(int serverId, IStorage storage)
         {
-            _coordinator = (ICoordinator) Activator.GetObject(typeof (ICoordinator), Config.RemoteMainserverUrl);
-            _serverId = serverInit.GetUuid();
-            _parent = serverInit.GetParent();
-            _children = new HashSet<int>();
+            _coordinator = (ICoordinator)Activator.GetObject(typeof(ICoordinator), Config.RemoteMainserverUrl);
+            _serverId = serverId;
             _storage = storage;
-            
         }
 
         public void PrepareTransaction(int txid)
@@ -165,9 +160,8 @@ namespace ServerLib.Transactions
             Console.WriteLine("Tx {0} wrote the PadInt {1} with value {2}", txid, key, value);
         }
 
-        public IStorage AddChild(int uid)
+        public IStorage GetStorage()
         {
-            _children.Add(uid);
             return _storage;
         }
 
@@ -277,7 +271,7 @@ namespace ServerLib.Transactions
         private ICoordinator GetCoordinator()
         {
             return _coordinator ??
-                   (_coordinator = (ICoordinator) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl));
+                   (_coordinator = (ICoordinator)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl));
         }
     }
 }
