@@ -88,7 +88,7 @@ namespace Server
 
             WaitIfSplitLocked();
 
-            if (ConsistentHashCalculator.IsMyPadInt(_serverCount, key, _serverId))
+            if (!ConsistentHashCalculator.IsMyPadInt(_serverCount, key, _serverId))
             {
                 // check if replica is dead
                 // if its dead tell master
@@ -129,7 +129,7 @@ namespace Server
 
             WaitIfSplitLocked();
 
-            if (ConsistentHashCalculator.IsMyPadInt(_serverCount, key, _serverId))
+            if (!ConsistentHashCalculator.IsMyPadInt(_serverCount, key, _serverId))
             {
                 // check if replica is dead
                 // if its dead tell master
