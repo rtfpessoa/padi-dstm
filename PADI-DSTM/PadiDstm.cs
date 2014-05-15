@@ -31,8 +31,8 @@ namespace PADI_DSTM
         public static bool Init()
         {
             IDictionary properties = new Hashtable();
-            properties["timeout"] = "5000";
-            properties["retryCount"] = "2";
+            properties["timeout"] = 5000;
+            properties["retryCount"] = 2;
             var channelServ = new TcpChannel(properties, null, null);
             ChannelServices.RegisterChannel(channelServ, true);
 

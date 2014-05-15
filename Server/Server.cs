@@ -11,7 +11,7 @@ namespace Server
 {
     internal class Server : MarshalByRefObject, IServer, IPartitipantProxy
     {
-        private const int _fiveSeconds = 5000;
+        private const int _fiveSeconds = 10000;
 
         private readonly IParticipant _participant;
         private readonly int _serverId;
@@ -31,9 +31,8 @@ namespace Server
             _version = serverInit.GetVersion();
             _parent = serverInit.GetParent();
             _children = new HashSet<int>();
-            _timerRunning = true;
-            _timerReference = new Timer(new TimerCallback(TimerTask), this, _fiveSeconds, _fiveSeconds);
             _isSplitLocked = false;
+            startHearthBeat();
         }
 
         public void DumpState()
@@ -60,6 +59,8 @@ namespace Server
 
         public bool Freeze()
         {
+            stopHearthBeat();
+
             return _isFrozen = true;
         }
 
@@ -68,6 +69,8 @@ namespace Server
             lock (this)
             {
                 _isFrozen = false;
+
+                startHearthBeat();
 
                 Monitor.PulseAll(this);
             }
@@ -200,17 +203,23 @@ namespace Server
 
         private void WaitIfFrozen()
         {
-            if (_isFrozen)
+            lock (this)
             {
-                Monitor.Wait(this);
+                if (_isFrozen)
+                {
+                    Monitor.Wait(this);
+                }
             }
         }
 
         private void WaitIfSplitLocked()
         {
-            if (_isSplitLocked)
+            lock (this)
             {
-                Monitor.Wait(this);
+                if (_isSplitLocked)
+                {
+                    Monitor.Wait(this);
+                }
             }
         }
 
@@ -249,6 +258,8 @@ namespace Server
 
         public bool AreYouAlive()
         {
+            WaitIfFrozen();
+
             Console.WriteLine("[Server:{0}] I'm Alive" + DateTime.Now.ToString(), _serverId);
             return true;
         }
@@ -266,21 +277,46 @@ namespace Server
             {
                 foreach (int child in _children)
                 {
-                    Console.WriteLine("Sending ping to child:{0} ... " + DateTime.Now.ToString(), child);
-                    IServer backupServer = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(child));
-                    backupServer.AreYouAlive();
+                    try
+                    {
+                        Console.WriteLine("Sending ping to child:{0} ... " + DateTime.Now.ToString(), child);
+                        IServer backupServer = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(child));
+                        backupServer.AreYouAlive();
+                    }
+                    catch
+                    {
+                        Console.WriteLine("Ping to child:{0} failed ... " + DateTime.Now.ToString(), child);
+                    }
                 }
             }
             else if (_parent != -1)
             {
-                Console.WriteLine("Sending ping to parent:{0} ... " + DateTime.Now.ToString(), _parent);
-                IServer backupServer = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(_parent));
-                backupServer.AreYouAlive();
+                try
+                {
+                    Console.WriteLine("Sending ping to parent:{0} ... " + DateTime.Now.ToString(), _parent);
+                    IServer backupServer = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(_parent));
+                    backupServer.AreYouAlive();
+                }
+                catch
+                {
+                    Console.WriteLine("Ping to parent:{0} failed ... " + DateTime.Now.ToString(), _parent);
+                }
             }
             else
             {
                 Console.WriteLine("Nobody to ping ... " + DateTime.Now.ToString(), _parent);
             }
+        }
+
+        private void startHearthBeat()
+        {
+            _timerRunning = true;
+            _timerReference = new Timer(new TimerCallback(TimerTask), this, _fiveSeconds, _fiveSeconds);
+        }
+
+        private void stopHearthBeat()
+        {
+            _timerRunning = false;
         }
     }
 }

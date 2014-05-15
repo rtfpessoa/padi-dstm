@@ -12,9 +12,9 @@ namespace ClientConsole.Tests
         public void Run()
         {
             IDictionary properties = new Hashtable();
-            properties["port"] = "9997";
-            properties["timeout"] = "5000";
-            properties["retryCount"] = "2";
+            properties["port"] = 9997;
+            properties["timeout"] = 5000;
+            properties["retryCount"] = 2;
             var channelServ = new TcpChannel(properties, null, null);
             ChannelServices.RegisterChannel(channelServ, true);
 
@@ -41,9 +41,9 @@ namespace ClientConsole.Tests
         public void Run()
         {
             IDictionary properties = new Hashtable();
-            properties["port"] = "9997";
-            properties["timeout"] = "5000";
-            properties["retryCount"] = "2";
+            properties["port"] = 9997;
+            properties["timeout"] = 5000;
+            properties["retryCount"] = 2;
             var channelServ = new TcpChannel(properties, null, null);
             ChannelServices.RegisterChannel(channelServ, true);
 
