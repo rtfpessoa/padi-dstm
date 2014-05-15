@@ -121,18 +121,19 @@ namespace MainServer
             entry.Active = false;
 
             var currentDirectory = Directory.GetCurrentDirectory();
-            var serverReleaseExe = currentDirectory + "..\\..\\..\\Server\\bin\\Release\\Server.exe";
-            var serverDebugExe = currentDirectory + "..\\..\\..\\Server\\bin\\Debug\\Server.exe";
+            var serverReleaseDir = currentDirectory + "\\..\\..\\..\\Server\\bin\\Release";
+            var serverDebugDir = currentDirectory + "\\..\\..\\..\\Server\\bin\\Debug";
+            var serverExe = "\\Server.exe";
 
-            if (Directory.Exists(serverReleaseExe))
+            if (Directory.Exists(serverReleaseDir))
             {
-                Process.Start(serverReleaseExe);
+                Process.Start(serverReleaseDir + serverExe);
                 return;
             }
 
-            if (Directory.Exists(serverDebugExe))
+            if (Directory.Exists(serverDebugDir))
             {
-                Process.Start(serverDebugExe);
+                Process.Start(serverDebugDir + serverExe);
                 return;
             }
         }
