@@ -35,11 +35,7 @@ namespace CommonTypes
 
         void DumpState();
 
-        void SetVersion(int version);
-
-        int GetVersion();
-
-        ParticipantStatus AddChild(int uid);
+        ParticipantStatus AddChild(int uid, int version);
 
         void RemoveChild(int uid);
 

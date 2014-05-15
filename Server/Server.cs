@@ -189,23 +189,15 @@ namespace Server
             _participant.AbortTransaction(txid);
         }
 
-        public void SetVersion(int version)
-        {
-            _version = version;
-        }
-
-        public int GetVersion()
-        {
-            return _version;
-        }
-
-        public ParticipantStatus AddChild(int uid)
+        public ParticipantStatus AddChild(int uid, int version)
         {
             WaitIfFrozen();
 
             _children.Add(uid);
 
             _serverCount = _serverCount + 1;
+
+            _version = version;
 
             return _participant.GetStatus();
         }

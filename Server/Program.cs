@@ -34,7 +34,7 @@ namespace Server
                 var parent = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(serverInit.GetParent()));
                 parent.StartSplitLock();
                 server.StartSplitLock();
-                ParticipantStatus status = parent.AddChild(serverInit.GetUuid());
+                ParticipantStatus status = parent.AddChild(serverInit.GetUuid(), serverInit.GetVersion());
                 server.SetStatus(status);
                 parent.EndSplitLock();
                 server.EndSplitLock();
