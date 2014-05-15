@@ -24,5 +24,7 @@ namespace CommonTypes
         bool GetServerStatus();
 
         int GetVersion();
+
+        void ReportDead(int uid);
     }
 }
