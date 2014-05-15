@@ -19,9 +19,9 @@ namespace ServerLib.Transactions
         /// <exception cref="TxException"></exception>
         void AbortTransaction(int txid);
 
-        IStorage GetStorage();
+        ParticipantStatus GetStatus();
 
-        void SetStorage(IStorage storage);
+        void SetStatus(ParticipantStatus status);
 
         void DumpState();
     }

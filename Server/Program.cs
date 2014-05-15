@@ -27,7 +27,7 @@ namespace Server
             if (serverInit.GetParent() != -1)
             {
                 var parent = (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(serverInit.GetParent()));
-                server.SetStorage(parent.AddChild(serverInit.GetUuid()));
+                server.SetStatus(parent.AddChild(serverInit.GetUuid()));
             }
 
             Console.WriteLine("Press <enter> to exit");

@@ -7,37 +7,29 @@ namespace ServerLib.Transactions
 {
     public class Participant : MarshalByRefObject, IParticipant
     {
-        private readonly HashSet<int> _padIntLocks = new HashSet<int>();
         private readonly int _serverId;
-        private readonly Dictionary<int, int> _startTxids = new Dictionary<int, int>();
-        private IStorage _storage;
-
-        private readonly Dictionary<int, Dictionary<int, int>> _txPadInts = new Dictionary<int, Dictionary<int, int>>();
-
-        private readonly Dictionary<int, HashSet<int>> _txReadSet = new Dictionary<int, HashSet<int>>();
-        private readonly Dictionary<int, HashSet<int>> _txWriteSet = new Dictionary<int, HashSet<int>>();
-
-        private int _biggestCommitedTxid = -1;
         private ICoordinator _coordinator;
+
+        private ParticipantStatus _status = new ParticipantStatus();
 
         public Participant(int serverId, IStorage storage)
         {
             _coordinator = (ICoordinator)Activator.GetObject(typeof(ICoordinator), Config.RemoteMainserverUrl);
             _serverId = serverId;
-            _storage = storage;
+            _status.storage = storage;
         }
 
         public void PrepareTransaction(int txid)
         {
             if (IsReadOnlyTx(txid)) return;
 
-            foreach (int padInt in _txWriteSet[txid])
+            foreach (int padInt in _status.txWriteSet[txid])
             {
                 lock (this)
                 {
-                    if (!_padIntLocks.Contains(padInt))
+                    if (!_status.padIntLocks.Contains(padInt))
                     {
-                        _padIntLocks.Add(padInt);
+                        _status.padIntLocks.Add(padInt);
                     }
                     else
                     {
@@ -48,9 +40,9 @@ namespace ServerLib.Transactions
 
             if (ReadOtherWrites(txid))
             {
-                foreach (int padInt in _txWriteSet[txid])
+                foreach (int padInt in _status.txWriteSet[txid])
                 {
-                    _padIntLocks.Remove(padInt);
+                    _status.padIntLocks.Remove(padInt);
                 }
 
                 throw new TxException();
@@ -67,22 +59,22 @@ namespace ServerLib.Transactions
         {
             if (!IsReadOnlyTx(txid))
             {
-                foreach (var padint in _txPadInts[txid])
+                foreach (var padint in _status.txPadInts[txid])
                 {
-                    _storage.WriteValue(padint.Key, padint.Value);
+                    _status.storage.WriteValue(padint.Key, padint.Value);
                 }
             }
 
-            foreach (int padInt in _txWriteSet[txid])
+            foreach (int padInt in _status.txWriteSet[txid])
             {
-                _padIntLocks.Remove(padInt);
+                _status.padIntLocks.Remove(padInt);
             }
 
             lock (this)
             {
-                if (txid > _biggestCommitedTxid)
+                if (txid > _status.biggestCommitedTxid)
                 {
-                    _biggestCommitedTxid = txid;
+                    _status.biggestCommitedTxid = txid;
                 }
             }
 
@@ -96,7 +88,7 @@ namespace ServerLib.Transactions
 
         public void DumpState()
         {
-            foreach (var pair in _storage.GetValues())
+            foreach (var pair in _status.storage.GetValues())
             {
                 Console.WriteLine("[Key:{0} | Value:{1}]", pair.Key, pair.Value);
             }
@@ -109,26 +101,26 @@ namespace ServerLib.Transactions
             int value;
 
             Dictionary<int, int> txPadInts;
-            if (!_storage.HasValue(key) &&
-                _txPadInts.TryGetValue(txid, out txPadInts) && !txPadInts.ContainsKey(key))
+            if (!_status.storage.HasValue(key) &&
+                _status.txPadInts.TryGetValue(txid, out txPadInts) && !txPadInts.ContainsKey(key))
             {
                 throw new TxException();
             }
 
-            if (!_txReadSet.ContainsKey(txid))
+            if (!_status.txReadSet.ContainsKey(txid))
             {
-                _txReadSet[txid] = new HashSet<int>();
+                _status.txReadSet[txid] = new HashSet<int>();
             }
 
-            _txReadSet[txid].Add(key);
+            _status.txReadSet[txid].Add(key);
 
-            if (_txPadInts.ContainsKey(txid) && _txPadInts[txid].ContainsKey(key))
+            if (_status.txPadInts.ContainsKey(txid) && _status.txPadInts[txid].ContainsKey(key))
             {
-                _txPadInts[txid].TryGetValue(key, out value);
+                _status.txPadInts[txid].TryGetValue(key, out value);
             }
             else
             {
-                value = _storage.ReadValue(key);
+                value = _status.storage.ReadValue(key);
             }
 
             Console.WriteLine("Tx {0} read the PadInt {1} with value {2}", txid, key, value);
@@ -140,19 +132,19 @@ namespace ServerLib.Transactions
         {
             DoJoinTransaction(txid);
 
-            if (!_txWriteSet.ContainsKey(txid))
+            if (!_status.txWriteSet.ContainsKey(txid))
             {
-                _txWriteSet[txid] = new HashSet<int>();
+                _status.txWriteSet[txid] = new HashSet<int>();
             }
 
-            _txWriteSet[txid].Add(key);
+            _status.txWriteSet[txid].Add(key);
 
-            if (!_txPadInts.ContainsKey(txid))
+            if (!_status.txPadInts.ContainsKey(txid))
             {
-                _txPadInts[txid] = new Dictionary<int, int>();
+                _status.txPadInts[txid] = new Dictionary<int, int>();
             }
 
-            _txPadInts[txid][key] = value;
+            _status.txPadInts[txid][key] = value;
 
             /* Fake read */
             ReadValue(txid, key);
@@ -160,14 +152,19 @@ namespace ServerLib.Transactions
             Console.WriteLine("Tx {0} wrote the PadInt {1} with value {2}", txid, key, value);
         }
 
-        public IStorage GetStorage()
+        public ParticipantStatus GetStatus()
         {
-            return _storage;
+            return _status;
         }
 
-        public void SetStorage(IStorage storage)
+        public void SetStatus(ParticipantStatus status)
         {
-            _storage = storage;
+            _status = status;
+
+            foreach (int txid in _status.startTxids.Keys)
+            {
+                GetCoordinator().JoinTransaction(txid, _serverId);
+            }
         }
 
         /*
@@ -178,7 +175,7 @@ namespace ServerLib.Transactions
         {
             HashSet<int> writes;
 
-            if (!_txWriteSet.TryGetValue(txid, out writes))
+            if (!_status.txWriteSet.TryGetValue(txid, out writes))
             {
                 return true;
             }
@@ -193,18 +190,18 @@ namespace ServerLib.Transactions
 
         private Boolean ReadOtherWrites(int txid)
         {
-            int startTxid, endTxid = _biggestCommitedTxid;
-            _startTxids.TryGetValue(txid, out startTxid);
+            int startTxid, endTxid = _status.biggestCommitedTxid;
+            _status.startTxids.TryGetValue(txid, out startTxid);
 
             HashSet<int> reads;
-            _txReadSet.TryGetValue(txid, out reads);
+            _status.txReadSet.TryGetValue(txid, out reads);
 
             for (int overlapTxid = startTxid + 1; overlapTxid <= endTxid; overlapTxid++)
             {
-                if (!_txReadSet.ContainsKey(overlapTxid))
+                if (!_status.txReadSet.ContainsKey(overlapTxid))
                 {
                     HashSet<int> overlapTxWrites;
-                    if (overlapTxid == txid || !_txWriteSet.TryGetValue(overlapTxid, out overlapTxWrites)) continue;
+                    if (overlapTxid == txid || !_status.txWriteSet.TryGetValue(overlapTxid, out overlapTxWrites)) continue;
 
                     if (reads != null && overlapTxWrites.Intersect(reads).Any())
                     {
@@ -224,10 +221,10 @@ namespace ServerLib.Transactions
         private IEnumerable<int> WriteOtherReads(int txid)
         {
             HashSet<int> writes;
-            _txWriteSet.TryGetValue(txid, out writes);
+            _status.txWriteSet.TryGetValue(txid, out writes);
 
             var conflicts = new HashSet<int>();
-            foreach (var overlapTx in _txReadSet)
+            foreach (var overlapTx in _status.txReadSet)
             {
                 if (writes != null && (overlapTx.Key != txid && overlapTx.Value.Intersect(writes).Any()))
                 {
@@ -244,27 +241,27 @@ namespace ServerLib.Transactions
 
         private void Clean(int txid, Boolean isFail = false)
         {
-            _txReadSet.Remove(txid);
+            _status.txReadSet.Remove(txid);
 
-            _txPadInts.Remove(txid);
+            _status.txPadInts.Remove(txid);
 
-            _startTxids.Remove(txid);
+            _status.startTxids.Remove(txid);
 
             if (isFail)
             {
-                _txWriteSet.Remove(txid);
+                _status.txWriteSet.Remove(txid);
             }
         }
 
         private void DoJoinTransaction(int txid)
         {
-            if (_startTxids.ContainsKey(txid)) return;
+            if (_status.startTxids.ContainsKey(txid)) return;
 
-            _txPadInts.Add(txid, new Dictionary<int, int>());
-            _txReadSet.Add(txid, new HashSet<int>());
-            _txWriteSet.Add(txid, new HashSet<int>());
+            _status.txPadInts.Add(txid, new Dictionary<int, int>());
+            _status.txReadSet.Add(txid, new HashSet<int>());
+            _status.txWriteSet.Add(txid, new HashSet<int>());
 
-            _startTxids.Add(txid, _biggestCommitedTxid);
+            _status.startTxids.Add(txid, _status.biggestCommitedTxid);
             GetCoordinator().JoinTransaction(txid, _serverId);
         }
 

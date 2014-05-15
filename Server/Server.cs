@@ -110,7 +110,7 @@ namespace Server
             {
                 GetReplica().WriteThrough(version, txid, key, value);
             }
-            catch (NoReplicationAvailableException ignored) { }
+            catch (NoReplicationAvailableException e) { }
         }
 
         public void WriteThrough(int version, int txid, int key, int value)
@@ -161,18 +161,18 @@ namespace Server
             return _version;
         }
 
-        public IStorage AddChild(int uid)
+        public ParticipantStatus AddChild(int uid)
         {
             WaitIfFrozen();
 
             _children.Add(uid);
 
-            return _participant.GetStorage();
+            return _participant.GetStatus();
         }
 
-        public void SetStorage(IStorage storage)
+        public void SetStatus(ParticipantStatus storage)
         {
-            _participant.SetStorage(storage);
+            _participant.SetStatus(storage);
         }
 
         private void WaitIfFrozen()

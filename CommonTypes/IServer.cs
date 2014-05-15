@@ -37,6 +37,6 @@
 
         int GetVersion();
 
-        IStorage AddChild(int uid);
+        ParticipantStatus AddChild(int uid);
     }
 }
