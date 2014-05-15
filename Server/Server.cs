@@ -92,6 +92,7 @@ namespace Server
             {
                 // check if replica is dead
                 // if its dead tell master
+                return 0;
             }
 
             int value = ParticipantReadValue(version, txid, key);
@@ -133,6 +134,7 @@ namespace Server
             {
                 // check if replica is dead
                 // if its dead tell master
+                return;
             }
 
             ParticipantWriteValue(version, txid, key, value);
