@@ -11,12 +11,17 @@ namespace Server
 {
     internal class Server : MarshalByRefObject, IServer, IPartitipantProxy
     {
+        private const int _fiveSeconds = 5000;
+
         private readonly IParticipant _participant;
         private readonly int _serverId;
         private bool _isFrozen;
         private int _version;
         private readonly int _parent;
         private HashSet<int> _children;
+
+        private bool _timerRunning;
+        private Timer _timerReference;
 
         public Server(ServerInit serverInit)
         {
@@ -25,6 +30,8 @@ namespace Server
             _version = serverInit.GetVersion();
             _parent = serverInit.GetParent();
             _children = new HashSet<int>();
+            _timerRunning = true;
+            _timerReference = new Timer(new TimerCallback(TimerTask), this, _fiveSeconds, _fiveSeconds);
         }
 
         public void DumpState()
@@ -77,7 +84,7 @@ namespace Server
             {
                 GetReplica().ReadThrough(version, txid, key);
             }
-            catch (NoReplicationAvailableException ignored) { }
+            catch (NoReplicationAvailableException) { }
 
             return value;
         }
@@ -110,7 +117,7 @@ namespace Server
             {
                 GetReplica().WriteThrough(version, txid, key, value);
             }
-            catch (NoReplicationAvailableException e) { }
+            catch (NoReplicationAvailableException) { }
         }
 
         public void WriteThrough(int version, int txid, int key, int value)
@@ -199,6 +206,42 @@ namespace Server
 
             int replicaServerId = _children.Max();
             return (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(replicaServerId));
+        }
+
+        public bool AreYouAlive()
+        {
+            Console.WriteLine("[Server:{0}] I'm Alive" + DateTime.Now.ToString(), _serverId);
+            return true;
+        }
+
+        private void TimerTask(Object server)
+        {
+            if (!_timerRunning)
+            {
+                Console.WriteLine("Killing ping service ... " + DateTime.Now.ToString());
+                _timerReference.Dispose();
+                return;
+            }
+
+            if (_children.Count > 0)
+            {
+                foreach (int child in _children)
+                {
+                    Console.WriteLine("Sending ping to child:{0} ... " + DateTime.Now.ToString(), child);
+                    IServer backupServer = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(child));
+                    backupServer.AreYouAlive();
+                }
+            }
+            else if (_parent != -1)
+            {
+                Console.WriteLine("Sending ping to parent:{0} ... " + DateTime.Now.ToString(), _parent);
+                IServer backupServer = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(_parent));
+                backupServer.AreYouAlive();
+            }
+            else
+            {
+                Console.WriteLine("Nobody to ping ... " + DateTime.Now.ToString(), _parent);
+            }
         }
     }
 }

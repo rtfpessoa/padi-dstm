@@ -3,6 +3,7 @@ using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 using CommonTypes;
 using PADI_DSTM;
+using System.Collections;
 
 namespace ClientConsole.Tests
 {
@@ -10,14 +11,18 @@ namespace ClientConsole.Tests
     {
         public void Run()
         {
-            var channelServ = new TcpChannel(9997);
+            IDictionary properties = new Hashtable();
+            properties["port"] = "9997";
+            properties["timeout"] = "5000";
+            properties["retryCount"] = "2";
+            var channelServ = new TcpChannel(properties, null, null);
             ChannelServices.RegisterChannel(channelServ, true);
 
             Console.WriteLine("Waiting for init. Press to start:");
             Console.ReadLine();
 
-            var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl);
-            var server = (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(0));
+            var mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
+            var server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(0));
 
             int txid1 = mainServer.StartTransaction();
             int txid2 = mainServer.StartTransaction();
@@ -35,14 +40,18 @@ namespace ClientConsole.Tests
     {
         public void Run()
         {
-            var channelServ = new TcpChannel(9997);
+            IDictionary properties = new Hashtable();
+            properties["port"] = "9997";
+            properties["timeout"] = "5000";
+            properties["retryCount"] = "2";
+            var channelServ = new TcpChannel(properties, null, null);
             ChannelServices.RegisterChannel(channelServ, true);
 
             Console.WriteLine("Waiting for init. Press to start:");
             Console.ReadLine();
 
-            var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl);
-            var server = (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(0));
+            var mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
+            var server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(0));
 
             int txid = mainServer.StartTransaction();
             server.WriteValue(0, txid, 1, 1);

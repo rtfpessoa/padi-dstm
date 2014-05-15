@@ -38,5 +38,7 @@
         int GetVersion();
 
         ParticipantStatus AddChild(int uid);
+
+        bool AreYouAlive();
     }
 }
