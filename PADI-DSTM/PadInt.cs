@@ -1,5 +1,6 @@
 ﻿using CommonTypes;
 using CommonTypes.NameRegistry;
+using System.Net.Sockets;
 
 namespace PADI_DSTM
 {
@@ -36,6 +37,14 @@ namespace PADI_DSTM
 
                 value = newPadInt.Read();
             }
+            catch (SocketException)
+            {
+                PadInt newPadInt = PadiDstm.GetBackupPadInt(_uid);
+                _server = newPadInt._server;
+                _version = newPadInt._version;
+
+                value = newPadInt.Read();
+            }
 
             return value;
         }
@@ -50,6 +59,14 @@ namespace PADI_DSTM
             {
                 PadiDstm.UpdateServers();
                 PadInt newPadInt = PadiDstm.GetPadInt(_uid);
+                _server = newPadInt._server;
+                _version = newPadInt._version;
+
+                newPadInt.Write(value);
+            }
+            catch (SocketException)
+            {
+                PadInt newPadInt = PadiDstm.GetBackupPadInt(_uid);
                 _server = newPadInt._server;
                 _version = newPadInt._version;
 

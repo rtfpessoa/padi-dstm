@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
+using System.Linq;
 
 namespace PADI_DSTM
 {
@@ -279,7 +280,7 @@ namespace PADI_DSTM
 
         public static PadInt CreatePadInt(int uid)
         {
-            Console.WriteLine("[Client.CreatePadInt] Entering AccessPadInt");
+            Console.WriteLine("[Client.CreatePadInt] Entering CreatePadInt");
 
             PadInt newPadInt = null;
 
@@ -343,7 +344,7 @@ namespace PADI_DSTM
             RegistryEntry serverEntry;
             if (_serverList.TryGetValue(serverNum, out serverEntry) && !serverEntry.Active)
             {
-                serverNum = serverEntry.Parent;
+                serverNum = GetBackupServer(serverNum);
             }
 
             string serverUrl = Config.GetServerUrl(serverNum);
@@ -351,6 +352,29 @@ namespace PADI_DSTM
             var server = (IServer)Activator.GetObject(typeof(IServer), serverUrl);
 
             return new PadInt(_currentTxInt, uid, server, _version);
+        }
+
+        internal static PadInt GetBackupPadInt(int uid)
+        {
+            int serverNum = GetBackupServer(uid);
+
+            string serverUrl = Config.GetServerUrl(serverNum);
+
+            var server = (IServer)Activator.GetObject(typeof(IServer), serverUrl);
+
+            return new PadInt(_currentTxInt, uid, server, _version);
+        }
+
+        internal static int GetBackupServer(int uid)
+        {
+            if (_serverList[uid].FaultDetection.Count > 0)
+            {
+                return _serverList[uid].FaultDetection.Max();
+            }
+
+            Console.WriteLine("We should never have two servers down!");
+
+            return -1;
         }
     }
 }

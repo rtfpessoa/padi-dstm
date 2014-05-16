@@ -110,18 +110,18 @@ namespace Server
             }
 
             if (!ConsistentHashCalculator.IsMyPadInt(_serverCount, key, _serverId) &&
-                !CheckServer(ConsistentHashCalculator.GetServerIdForPadInt(_serverCount, key)))
+                CheckServer(ConsistentHashCalculator.GetServerIdForPadInt(_serverCount, key)))
             {
-                return _participant.ReadValue(txid, key);
+                throw new WrongVersionException();
             }
 
             int value = _participant.ReadValue(txid, key);
 
             try
             {
-                GetReplica().ReadThrough(version, txid, key);
+                //GetReplica().ReadThrough(version, txid, key);
             }
-            catch (NoReplicationAvailableException) { }
+            catch { }
 
             return value;
         }
@@ -148,9 +148,8 @@ namespace Server
             }
 
             if (!ConsistentHashCalculator.IsMyPadInt(_serverCount, key, _serverId) &&
-                !CheckServer(ConsistentHashCalculator.GetServerIdForPadInt(_serverCount, key)))
+                CheckServer(ConsistentHashCalculator.GetServerIdForPadInt(_serverCount, key)))
             {
-                _participant.WriteValue(txid, key, value);
                 return;
             }
 
@@ -158,9 +157,9 @@ namespace Server
 
             try
             {
-                GetReplica().WriteThrough(version, txid, key, value);
+               // GetReplica().WriteThrough(version, txid, key, value);
             }
-            catch (NoReplicationAvailableException) { }
+            catch { }
         }
 
         public void WriteThrough(int version, int txid, int key, int value)
