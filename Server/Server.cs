@@ -119,7 +119,7 @@ namespace Server
 
             try
             {
-                //GetReplica().ReadThrough(version, txid, key);
+                GetReplica().ReadThrough(version, txid, key);
             }
             catch { }
 
@@ -157,7 +157,7 @@ namespace Server
 
             try
             {
-               // GetReplica().WriteThrough(version, txid, key, value);
+               GetReplica().WriteThrough(version, txid, key, value);
             }
             catch { }
         }
