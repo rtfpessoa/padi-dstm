@@ -6,8 +6,8 @@ namespace CommonTypes.NameRegistry
     [Serializable]
     public class RegistryEntry
     {
-        public readonly int Parent;
         public readonly HashSet<int> FaultDetection;
+        public readonly int Parent;
         public bool Active;
 
         public RegistryEntry(int parent, bool active)

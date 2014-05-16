@@ -4,7 +4,7 @@
     {
         public static readonly int InvocationTimeout = 5000;
         public static readonly int NoInvocationTimeout = -1;
-        
+
         public static readonly int RemoteMainserverPort = 9999;
         public static readonly string RemoteMainserverObjName = "MainServer";
 

@@ -6,17 +6,15 @@ namespace CommonTypes
     [Serializable]
     public class ServerInit
     {
-        public readonly int Uuid;
-
-        public readonly int Version;
-
-        public readonly int Parent;
-
         public readonly KeyValuePair<int, bool> Backup;
 
         public readonly Dictionary<int, bool> FaultDetection;
+        public readonly int Parent;
 
         public readonly int ServerCount;
+        public readonly int Uuid;
+
+        public readonly int Version;
 
         public ServerInit(int uuid, int version, int parent, Dictionary<int, bool> faultDetection, int serverCount)
         {

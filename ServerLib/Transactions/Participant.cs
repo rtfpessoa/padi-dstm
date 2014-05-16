@@ -23,8 +23,6 @@ namespace ServerLib.Transactions
 
         public void PrepareTransaction(int txid)
         {
-            if (IsReadOnlyTx(txid)) return;
-
             foreach (int padInt in _status.txWriteSet[txid])
             {
                 lock (this)
@@ -59,12 +57,9 @@ namespace ServerLib.Transactions
 
         public void CommitTransaction(int txid)
         {
-            if (!IsReadOnlyTx(txid))
+            foreach (var padint in _status.txPadInts[txid])
             {
-                foreach (var padint in _status.txPadInts[txid])
-                {
-                    _status.storage.WriteValue(padint.Key, padint.Value);
-                }
+                _status.storage.WriteValue(padint.Key, padint.Value);
             }
 
             foreach (int padInt in _status.txWriteSet[txid])
@@ -170,22 +165,6 @@ namespace ServerLib.Transactions
         }
 
         /*
-         * Checks if a transaction is read-only (didn't wrote any PadInts)
-         */
-
-        private Boolean IsReadOnlyTx(int txid)
-        {
-            HashSet<int> writes;
-
-            if (!_status.txWriteSet.TryGetValue(txid, out writes))
-            {
-                return true;
-            }
-
-            return writes.Count == 0;
-        }
-
-        /*
          * Checks if there are any changed PadInts between the transaction reads
          *  and all the overlaping transactions writes that already commited
          */
@@ -203,7 +182,8 @@ namespace ServerLib.Transactions
                 if (!_status.txReadSet.ContainsKey(overlapTxid))
                 {
                     HashSet<int> overlapTxWrites;
-                    if (overlapTxid == txid || !_status.txWriteSet.TryGetValue(overlapTxid, out overlapTxWrites)) continue;
+                    if (overlapTxid == txid || !_status.txWriteSet.TryGetValue(overlapTxid, out overlapTxWrites))
+                        continue;
 
                     if (reads != null && overlapTxWrites.Intersect(reads).Any())
                     {

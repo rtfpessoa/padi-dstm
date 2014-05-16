@@ -1,6 +1,6 @@
-﻿using CommonTypes;
+﻿using System.Net.Sockets;
+using CommonTypes;
 using CommonTypes.NameRegistry;
-using System.Net.Sockets;
 
 namespace PADI_DSTM
 {

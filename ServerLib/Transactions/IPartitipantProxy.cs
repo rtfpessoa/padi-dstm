@@ -1,4 +1,4 @@
-﻿using CommonTypes;
+﻿using CommonTypes.Transactions;
 
 namespace ServerLib.Transactions
 {

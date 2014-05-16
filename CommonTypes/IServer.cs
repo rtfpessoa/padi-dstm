@@ -1,4 +1,5 @@
-﻿using CommonTypes.Transactions;
+﻿using CommonTypes.NameRegistry;
+using CommonTypes.Transactions;
 
 namespace CommonTypes
 {

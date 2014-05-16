@@ -1,19 +1,19 @@
-﻿using CommonTypes;
-using CommonTypes.NameRegistry;
-using ServerLib.NameRegistry;
-using ServerLib.Transactions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using CommonTypes;
+using CommonTypes.NameRegistry;
+using ServerLib.NameRegistry;
+using ServerLib.Transactions;
 
 namespace MainServer
 {
     internal class MainServer : Coordinator, IMainServer, INameRegistry
     {
-        private readonly Dictionary<int, RegistryEntry> _registry = new Dictionary<int, RegistryEntry>();
         private readonly HashSet<int> _deadServers = new HashSet<int>();
+        private readonly Dictionary<int, RegistryEntry> _registry = new Dictionary<int, RegistryEntry>();
         private int _serverUidGenerator;
         private int _version;
 
@@ -32,7 +32,7 @@ namespace MainServer
             {
                 if (serverEntry.Value.Active)
                 {
-                    var server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(serverEntry.Key));
+                    var server = (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(serverEntry.Key));
                     result &= server.Status();
                 }
             }
@@ -47,11 +47,11 @@ namespace MainServer
                 int version = ++_version;
                 int parent = -1;
                 RegistryEntry entry;
-                Dictionary<int, bool> faultDetection = new Dictionary<int, bool>();
+                var faultDetection = new Dictionary<int, bool>();
 
                 if (_deadServers.Count > 0)
                 {
-                    var serverId = _deadServers.Min();
+                    int serverId = _deadServers.Min();
                     _registry[serverId].Active = true;
 
                     _registry.TryGetValue(serverId, out entry);
@@ -134,26 +134,28 @@ namespace MainServer
                     {
                         if (fd != reporterId && _registry[fd].Active)
                         {
-                            var faultDetection = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(fd));
+                            var faultDetection =
+                                (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(fd));
                             faultDetection.OnFaultDetectionDeath(deadId);
                         }
                     }
 
-                    var currentDirectory = Directory.GetCurrentDirectory();
-                    var serverReleaseDir = currentDirectory + "\\..\\..\\..\\Server\\bin\\Release";
-                    var serverDebugDir = currentDirectory + "\\..\\..\\..\\Server\\bin\\Debug";
-                    var serverExe = "Server.exe";
+                    string currentDirectory = Directory.GetCurrentDirectory();
+                    string serverReleaseDir = currentDirectory + "\\..\\..\\..\\Server\\bin\\Release";
+                    string serverDebugDir = currentDirectory + "\\..\\..\\..\\Server\\bin\\Debug";
+                    string serverExe = "Server.exe";
 
-                    if (Directory.Exists(serverReleaseDir) && Directory.GetFiles(serverReleaseDir).ToList().Exists(x => x.EndsWith(serverExe)))
+                    if (Directory.Exists(serverReleaseDir) &&
+                        Directory.GetFiles(serverReleaseDir).ToList().Exists(x => x.EndsWith(serverExe)))
                     {
                         Process.Start(serverReleaseDir + "\\" + serverExe);
                         return;
                     }
 
-                    if (Directory.Exists(serverDebugDir) && Directory.GetFiles(serverDebugDir).ToList().Exists(x => x.EndsWith(serverExe)))
+                    if (Directory.Exists(serverDebugDir) &&
+                        Directory.GetFiles(serverDebugDir).ToList().Exists(x => x.EndsWith(serverExe)))
                     {
                         Process.Start(serverDebugDir + "\\" + serverExe);
-                        return;
                     }
                 }
             }

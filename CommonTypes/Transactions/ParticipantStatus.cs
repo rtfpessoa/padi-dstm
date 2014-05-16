@@ -1,6 +1,6 @@
-﻿using CommonTypes.Storage;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using CommonTypes.Storage;
 
 namespace CommonTypes.Transactions
 {
@@ -9,7 +9,6 @@ namespace CommonTypes.Transactions
     {
         public readonly HashSet<int> padIntLocks = new HashSet<int>();
         public readonly Dictionary<int, int> startTxids = new Dictionary<int, int>();
-        public IStorage storage;
 
         public readonly Dictionary<int, Dictionary<int, int>> txPadInts = new Dictionary<int, Dictionary<int, int>>();
 
@@ -17,5 +16,6 @@ namespace CommonTypes.Transactions
         public readonly Dictionary<int, HashSet<int>> txWriteSet = new Dictionary<int, HashSet<int>>();
 
         public int biggestCommitedTxid = -1;
+        public IStorage storage;
     }
 }

@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 using CommonTypes;
 using PADI_DSTM;
-using System.Collections;
 
 namespace ClientConsole.Tests
 {
@@ -21,8 +21,8 @@ namespace ClientConsole.Tests
             Console.WriteLine("Waiting for init. Press to start:");
             Console.ReadLine();
 
-            var mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
-            var server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(0));
+            var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl);
+            var server = (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(0));
 
             int txid1 = mainServer.StartTransaction();
             int txid2 = mainServer.StartTransaction();
@@ -50,8 +50,8 @@ namespace ClientConsole.Tests
             Console.WriteLine("Waiting for init. Press to start:");
             Console.ReadLine();
 
-            var mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
-            var server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(0));
+            var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl);
+            var server = (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(0));
 
             int txid = mainServer.StartTransaction();
             server.WriteValue(0, txid, 1, 1);

@@ -1,33 +1,32 @@
-﻿using CommonTypes;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using CommonTypes;
 using CommonTypes.NameRegistry;
 using CommonTypes.Transactions;
 using ServerLib;
 using ServerLib.Storage;
 using ServerLib.Transactions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 
 namespace Server
 {
     internal class Server : MarshalByRefObject, IServer, IPartitipantProxy
     {
         private const int _fiveSeconds = 10000;
+        private readonly Dictionary<int, bool> _faultDetection;
+        private readonly bool _hasChildren;
+        private readonly int _parent;
 
         private readonly IParticipant _participant;
         private readonly int _serverId;
-        private int _serverCount;
         private bool _isFrozen;
-        private int _version;
-        private Dictionary<int, bool> _faultDetection;
-        private int _parent;
         private bool _isSplitLocked;
+        private int _serverCount;
 
-        private bool _timerRunning;
         private Timer _timerReference;
-
-        private bool _hasChildren;
+        private bool _timerRunning;
+        private int _version;
 
         public Server(ServerInit serverInit)
         {
@@ -121,7 +120,9 @@ namespace Server
             {
                 GetReplica().ReadThrough(version, txid, key);
             }
-            catch { }
+            catch
+            {
+            }
 
             return value;
         }
@@ -157,9 +158,11 @@ namespace Server
 
             try
             {
-               GetReplica().WriteThrough(version, txid, key, value);
+                GetReplica().WriteThrough(version, txid, key, value);
             }
-            catch { }
+            catch
+            {
+            }
         }
 
         public void WriteThrough(int version, int txid, int key, int value)
@@ -203,7 +206,7 @@ namespace Server
             WaitIfFrozen();
             if (!_hasChildren && _parent != -1)
             {
-                var parent = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(_parent));
+                var parent = (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(_parent));
                 parent.RemoveFaultDetection(_serverId);
             }
             else if (_faultDetection.Count > 0)
@@ -212,7 +215,7 @@ namespace Server
                 {
                     if (fd != uid)
                     {
-                        var server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(fd));
+                        var server = (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(fd));
                         server.RemoveFaultDetection(_serverId);
                     }
                 }
@@ -243,6 +246,45 @@ namespace Server
             }
         }
 
+        public void StartSplitLock()
+        {
+            _isSplitLocked = true;
+        }
+
+        public void EndSplitLock()
+        {
+            lock (this)
+            {
+                _isSplitLocked = false;
+
+                Monitor.PulseAll(this);
+            }
+        }
+
+        public bool AreYouAlive()
+        {
+            WaitIfFrozen();
+
+            Console.WriteLine("[Server:{0}] I'm Alive" + DateTime.Now, _serverId);
+            return true;
+        }
+
+        public void RemoveFaultDetection(int uid)
+        {
+            if (_faultDetection.ContainsKey(uid))
+            {
+                _faultDetection.Remove(uid);
+                var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl);
+                mainServer.RemoveFaultDetection(_serverId, uid);
+            }
+        }
+
+
+        public void OnReborn(int faultDetection)
+        {
+            _faultDetection[faultDetection] = true;
+        }
+
         public void SetStatus(ParticipantStatus storage)
         {
             _participant.SetStatus(storage);
@@ -270,56 +312,33 @@ namespace Server
             }
         }
 
-        public void StartSplitLock()
-        {
-            _isSplitLocked = true;
-        }
-
-        public void EndSplitLock()
-        {
-            lock (this)
-            {
-                _isSplitLocked = false;
-
-                Monitor.PulseAll(this);
-            }
-        }
-
         private IServer GetReplica()
         {
             if (_faultDetection.Count > 0)
             {
-                var backup = _faultDetection.Keys.Max();
+                int backup = _faultDetection.Keys.Max();
 
                 if (_faultDetection[backup])
                 {
-                    return (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(backup));
+                    return (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(backup));
                 }
             }
 
             throw new NoReplicationAvailableException();
         }
 
-        public bool AreYouAlive()
-        {
-            WaitIfFrozen();
-
-            Console.WriteLine("[Server:{0}] I'm Alive" + DateTime.Now.ToString(), _serverId);
-            return true;
-        }
-
         private void TimerTask(Object server)
         {
             if (!_timerRunning)
             {
-                Console.WriteLine("Killing ping service ... " + DateTime.Now.ToString());
+                Console.WriteLine("Killing ping service ... " + DateTime.Now);
                 _timerReference.Dispose();
                 return;
             }
 
             if (_faultDetection.Count > 0)
             {
-                foreach (KeyValuePair<int, bool> faultDetection in _faultDetection.ToList())
+                foreach (var faultDetection in _faultDetection.ToList())
                 {
                     if (!faultDetection.Value)
                     {
@@ -331,7 +350,7 @@ namespace Server
             }
             else
             {
-                Console.WriteLine("Nobody to ping ... " + DateTime.Now.ToString(), _parent);
+                Console.WriteLine("Nobody to ping ... " + DateTime.Now, _parent);
             }
         }
 
@@ -339,14 +358,14 @@ namespace Server
         {
             try
             {
-                Console.WriteLine("Sending ping to server:{0} ... " + DateTime.Now.ToString(), serverUid);
-                IServer backupServer = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(serverUid));
+                Console.WriteLine("Sending ping to server:{0} ... " + DateTime.Now, serverUid);
+                var backupServer = (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(serverUid));
                 backupServer.AreYouAlive();
             }
             catch
             {
-                Console.WriteLine("Ping to server:{0} failed ... " + DateTime.Now.ToString(), serverUid);
-                IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
+                Console.WriteLine("Ping to server:{0} failed ... " + DateTime.Now, serverUid);
+                var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl);
 
                 OnFaultDetectionDeath(serverUid);
 
@@ -361,29 +380,12 @@ namespace Server
         private void StartHearthBeat()
         {
             _timerRunning = true;
-            _timerReference = new Timer(new TimerCallback(TimerTask), this, _fiveSeconds, _fiveSeconds);
+            _timerReference = new Timer(TimerTask, this, _fiveSeconds, _fiveSeconds);
         }
 
         private void StopHearthBeat()
         {
             _timerRunning = false;
-        }
-
-
-        public void RemoveFaultDetection(int uid)
-        {
-            if (_faultDetection.ContainsKey(uid))
-            {
-                _faultDetection.Remove(uid);
-                IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
-                mainServer.RemoveFaultDetection(_serverId, uid);
-            }
-        }
-
-
-        public void OnReborn(int faultDetection)
-        {
-            _faultDetection[faultDetection] = true;
         }
     }
 }
