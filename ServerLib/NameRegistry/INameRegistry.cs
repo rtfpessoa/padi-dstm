@@ -8,8 +8,6 @@ namespace ServerLib.NameRegistry
     {
         ServerInit AddServer();
 
-        void RemoveServer(int uid);
-
         Dictionary<int, RegistryEntry> ListServers();
     }
 }

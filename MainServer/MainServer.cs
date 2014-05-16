@@ -5,9 +5,8 @@ using ServerLib.Transactions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.IO;
-using System.Collections;
+using System.Linq;
 
 namespace MainServer
 {
@@ -17,16 +16,6 @@ namespace MainServer
         private readonly HashSet<int> _deadServers = new HashSet<int>();
         private int _serverUidGenerator;
         private int _version;
-
-        public void RemoveServer(int uid)
-        {
-            RegistryEntry entry;
-
-            if (_registry.TryGetValue(uid, out entry))
-            {
-                entry.Active = false;
-            }
-        }
 
         public Dictionary<int, RegistryEntry> ListServers()
         {
@@ -41,8 +30,11 @@ namespace MainServer
 
             foreach (var serverEntry in _registry)
             {
-                var server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(serverEntry.Key));
-                result &= server.Status();
+                if (serverEntry.Value.Active)
+                {
+                    var server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(serverEntry.Key));
+                    result &= server.Status();
+                }
             }
 
             return result;
@@ -55,14 +47,23 @@ namespace MainServer
                 int version = ++_version;
                 int parent = -1;
                 RegistryEntry entry;
+                Dictionary<int, bool> faultDetection = new Dictionary<int, bool>();
 
                 if (_deadServers.Count > 0)
                 {
                     var serverId = _deadServers.Min();
-                    _registry.TryGetValue(serverId, out entry);
-                    entry.Active = true;
+                    _registry[serverId].Active = true;
 
-                    return new ServerInit(serverId, version, entry.Parent, _registry.Count);
+                    _registry.TryGetValue(serverId, out entry);
+                    parent = entry.Parent;
+
+                    foreach (int fd in entry.FaultDetection)
+                    {
+                        faultDetection.Add(fd, _registry[fd].Active);
+                    }
+
+
+                    return new ServerInit(serverId, version, parent, faultDetection, _registry.Count);
                 }
 
                 int uid = _serverUidGenerator++;
@@ -71,13 +72,14 @@ namespace MainServer
                 if (_registry.Count == 0)
                 {
                     _registry.Add(uid, new RegistryEntry(parent, true));
-                    return new ServerInit(uid, version, -1, _registry.Count);
+
+                    return new ServerInit(uid, version, parent, faultDetection, _registry.Count);
                 }
 
                 if (_registry.TryGetValue(uid, out entry))
                 {
                     /* Enable the disabled child */
-                    entry.Active = true;
+                    _registry[uid].Active = true;
                     parent = entry.Parent;
                 }
                 else
@@ -98,12 +100,12 @@ namespace MainServer
                     }
                 }
 
-                /* Update parent children and update parent version */
-                RegistryEntry parentEntry;
-                _registry.TryGetValue(uid, out parentEntry);
-                parentEntry.Children.Add(uid);
+                _registry[parent].FaultDetection.Add(uid);
+                _registry[uid].FaultDetection.Add(parent);
 
-                return new ServerInit(uid, version, parent, _registry.Count);
+                faultDetection.Add(parent, _registry[parent].Active);
+
+                return new ServerInit(uid, version, parent, faultDetection, _registry.Count);
             }
         }
 
@@ -112,32 +114,45 @@ namespace MainServer
             return _version;
         }
 
-        public void ReportDead(int uid)
+        public void RemoveFaultDetection(int serverId, int failDetection)
+        {
+            _registry[serverId].FaultDetection.Remove(failDetection);
+        }
+
+        public void ReportDead(int reporterId, int deadId)
         {
             lock (this)
             {
-                if (!_deadServers.Contains(uid))
+                if (!_deadServers.Contains(deadId))
                 {
-                    Console.WriteLine("Server {0} reported dead!", uid);
-                    _deadServers.Add(uid);
-                    RegistryEntry entry;
-                    _registry.TryGetValue(uid, out entry);
+                    Console.WriteLine("Server {0} reported dead!", deadId);
+                    _deadServers.Add(deadId);
+                    RegistryEntry entry = _registry[deadId];
                     entry.Active = false;
+
+                    foreach (int fd in entry.FaultDetection)
+                    {
+                        if (fd != reporterId && _registry[fd].Active)
+                        {
+                            var faultDetection = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(fd));
+                            faultDetection.OnFaultDetectionDeath(deadId);
+                        }
+                    }
 
                     var currentDirectory = Directory.GetCurrentDirectory();
                     var serverReleaseDir = currentDirectory + "\\..\\..\\..\\Server\\bin\\Release";
                     var serverDebugDir = currentDirectory + "\\..\\..\\..\\Server\\bin\\Debug";
-                    var serverExe = "\\Server.exe";
+                    var serverExe = "Server.exe";
 
-                    if (Directory.Exists(serverReleaseDir))
+                    if (Directory.Exists(serverReleaseDir) && Directory.GetFiles(serverReleaseDir).ToList().Exists(x => x.EndsWith(serverExe)))
                     {
-                        Process.Start(serverReleaseDir + serverExe);
+                        Process.Start(serverReleaseDir + "\\" + serverExe);
                         return;
                     }
 
-                    if (Directory.Exists(serverDebugDir))
+                    if (Directory.Exists(serverDebugDir) && Directory.GetFiles(serverDebugDir).ToList().Exists(x => x.EndsWith(serverExe)))
                     {
-                        Process.Start(serverDebugDir + serverExe);
+                        Process.Start(serverDebugDir + "\\" + serverExe);
                         return;
                     }
                 }

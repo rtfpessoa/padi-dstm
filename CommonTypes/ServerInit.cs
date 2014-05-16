@@ -1,44 +1,30 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace CommonTypes
 {
     [Serializable]
     public class ServerInit
     {
-        private readonly int _uuid;
+        public readonly int Uuid;
 
-        private readonly int _version;
+        public readonly int Version;
 
-        private readonly int _parent;
+        public readonly int Parent;
 
-        private readonly int _serverCount;
+        public readonly KeyValuePair<int, bool> Backup;
 
-        public ServerInit(int uuid, int version, int parent, int serverCount)
+        public readonly Dictionary<int, bool> FaultDetection;
+
+        public readonly int ServerCount;
+
+        public ServerInit(int uuid, int version, int parent, Dictionary<int, bool> faultDetection, int serverCount)
         {
-            _uuid = uuid;
-            _version = version;
-            _parent = parent;
-            _serverCount = serverCount;
-        }
-
-        public int GetUuid()
-        {
-            return _uuid;
-        }
-
-        public int GetVersion()
-        {
-            return _version;
-        }
-
-        public int GetParent()
-        {
-            return _parent;
-        }
-
-        public int GetServerCount()
-        {
-            return _serverCount;
+            Uuid = uuid;
+            Version = version;
+            Parent = parent;
+            FaultDetection = faultDetection;
+            ServerCount = serverCount;
         }
     }
 }

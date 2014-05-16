@@ -35,14 +35,20 @@ namespace CommonTypes
 
         void DumpState();
 
-        ParticipantStatus AddChild(int uid, int version);
+        ParticipantStatus OnChild(int uid, int version, int serverCount);
 
-        void RemoveChild(int uid);
+        ParticipantStatus OnChildReborn(int uid, int version, int serverCount);
 
         bool AreYouAlive();
 
         void StartSplitLock();
 
         void EndSplitLock();
+
+        void RemoveFaultDetection(int uid);
+
+        void OnFaultDetectionDeath(int deadId);
+
+        void OnReborn(int p);
     }
 }

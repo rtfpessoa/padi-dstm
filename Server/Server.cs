@@ -20,23 +20,39 @@ namespace Server
         private int _serverCount;
         private bool _isFrozen;
         private int _version;
-        private readonly int _parent;
-        private HashSet<int> _children;
+        private Dictionary<int, bool> _faultDetection;
+        private int _parent;
         private bool _isSplitLocked;
 
         private bool _timerRunning;
         private Timer _timerReference;
 
+        private bool _hasChildren;
+
         public Server(ServerInit serverInit)
         {
-            _serverId = serverInit.GetUuid();
-            _serverCount = serverInit.GetServerCount();
+            _serverId = serverInit.Uuid;
+            _serverCount = serverInit.ServerCount;
             _participant = new Participant(_serverId, new KeyValueStorage());
-            _version = serverInit.GetVersion();
-            _parent = serverInit.GetParent();
-            _children = new HashSet<int>();
+            _version = serverInit.Version;
             _isSplitLocked = false;
-            startHearthBeat();
+            StartHearthBeat();
+
+            _parent = serverInit.Parent;
+            _faultDetection = serverInit.FaultDetection;
+
+            if (serverInit.FaultDetection.Count == 1 && serverInit.FaultDetection.ContainsKey(_parent))
+            {
+                _hasChildren = false;
+            }
+            else if (serverInit.FaultDetection.Count > 0)
+            {
+                _hasChildren = true;
+            }
+            else
+            {
+                _hasChildren = false;
+            }
         }
 
         public void DumpState()
@@ -63,7 +79,7 @@ namespace Server
 
         public bool Freeze()
         {
-            stopHearthBeat();
+            StopHearthBeat();
 
             return _isFrozen = true;
         }
@@ -74,7 +90,7 @@ namespace Server
             {
                 _isFrozen = false;
 
-                startHearthBeat();
+                StartHearthBeat();
 
                 Monitor.PulseAll(this);
             }
@@ -88,14 +104,19 @@ namespace Server
 
             WaitIfSplitLocked();
 
-            if (!ConsistentHashCalculator.IsMyPadInt(_serverCount, key, _serverId))
+            if (_version > version)
             {
-                // check if replica is dead
-                // if its dead tell master
-                return 0;
+                throw new WrongVersionException();
             }
 
-            int value = ParticipantReadValue(version, txid, key);
+            if (!ConsistentHashCalculator.IsMyPadInt(_serverCount, key, _serverId) &&
+                !CheckServer(ConsistentHashCalculator.GetServerIdForPadInt(_serverCount, key)))
+            {
+                return _participant.ReadValue(txid, key);
+            }
+
+            int value = _participant.ReadValue(txid, key);
+
             try
             {
                 GetReplica().ReadThrough(version, txid, key);
@@ -111,17 +132,7 @@ namespace Server
 
             WaitIfSplitLocked();
 
-            ParticipantReadValue(version, txid, key);
-        }
-
-        private int ParticipantReadValue(int version, int txid, int key)
-        {
-            if (_version < version)
-            {
-                throw new WrongVersionException();
-            }
-
-            return _participant.ReadValue(txid, key);
+            _participant.ReadValue(txid, key);
         }
 
         public void WriteValue(int version, int txid, int key, int value)
@@ -130,14 +141,21 @@ namespace Server
 
             WaitIfSplitLocked();
 
-            if (!ConsistentHashCalculator.IsMyPadInt(_serverCount, key, _serverId))
+
+            if (_version > version)
             {
-                // check if replica is dead
-                // if its dead tell master
+                throw new WrongVersionException();
+            }
+
+            if (!ConsistentHashCalculator.IsMyPadInt(_serverCount, key, _serverId) &&
+                !CheckServer(ConsistentHashCalculator.GetServerIdForPadInt(_serverCount, key)))
+            {
+                _participant.WriteValue(txid, key, value);
                 return;
             }
 
-            ParticipantWriteValue(version, txid, key, value);
+            _participant.WriteValue(txid, key, value);
+
             try
             {
                 GetReplica().WriteThrough(version, txid, key, value);
@@ -150,16 +168,6 @@ namespace Server
             WaitIfFrozen();
 
             WaitIfSplitLocked();
-
-            ParticipantWriteValue(version, txid, key, value);
-        }
-
-        private void ParticipantWriteValue(int version, int txid, int key, int value)
-        {
-            if (_version < version)
-            {
-                throw new WrongVersionException();
-            }
 
             _participant.WriteValue(txid, key, value);
         }
@@ -191,26 +199,49 @@ namespace Server
             _participant.AbortTransaction(txid);
         }
 
-        public ParticipantStatus AddChild(int uid, int version)
+        public ParticipantStatus OnChild(int uid, int version, int serverCount)
+        {
+            WaitIfFrozen();
+            if (!_hasChildren && _parent != -1)
+            {
+                var parent = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(_parent));
+                parent.RemoveFaultDetection(_serverId);
+            }
+            else if (_faultDetection.Count > 0)
+            {
+                foreach (int fd in _faultDetection.Keys)
+                {
+                    if (fd != uid)
+                    {
+                        var server = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(fd));
+                        server.RemoveFaultDetection(_serverId);
+                    }
+                }
+            }
+
+            return OnChildReborn(uid, version, serverCount);
+        }
+
+        public ParticipantStatus OnChildReborn(int uid, int version, int serverCount)
         {
             WaitIfFrozen();
 
-            _children.Add(uid);
+            _faultDetection[uid] = true;
 
-            _serverCount = _serverCount + 1;
-
+            _serverCount = serverCount;
             _version = version;
 
             return _participant.GetStatus();
         }
 
-        public void RemoveChild(int uid)
+        public void OnFaultDetectionDeath(int deadId)
         {
             WaitIfFrozen();
 
-            _children.Remove(uid);
-
-            _serverCount = _serverCount - 1;
+            if (_faultDetection.ContainsKey(deadId))
+            {
+                _faultDetection[deadId] = false;
+            }
         }
 
         public void SetStatus(ParticipantStatus storage)
@@ -257,20 +288,17 @@ namespace Server
 
         private IServer GetReplica()
         {
-            if (_children.Count == 0)
+            if (_faultDetection.Count > 0)
             {
-                if (_parent != -1)
+                var backup = _faultDetection.Keys.Max();
+
+                if (_faultDetection[backup])
                 {
-                    return (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(_parent));
-                }
-                else
-                {
-                    throw new NoReplicationAvailableException();
+                    return (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(backup));
                 }
             }
 
-            int replicaServerId = _children.Max();
-            return (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(replicaServerId));
+            throw new NoReplicationAvailableException();
         }
 
         public bool AreYouAlive()
@@ -290,39 +318,16 @@ namespace Server
                 return;
             }
 
-            if (_children.Count > 0)
+            if (_faultDetection.Count > 0)
             {
-                foreach (int child in _children)
+                foreach (KeyValuePair<int, bool> faultDetection in _faultDetection.ToList())
                 {
-                    try
+                    if (!faultDetection.Value)
                     {
-                        Console.WriteLine("Sending ping to child:{0} ... " + DateTime.Now.ToString(), child);
-                        IServer backupServer = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(child));
-                        backupServer.AreYouAlive();
+                        continue;
                     }
-                    catch
-                    {
-                        Console.WriteLine("Ping to child:{0} failed ... " + DateTime.Now.ToString(), child);
-                        IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
-                        RemoveChild(_parent);
-                        mainServer.ReportDead(child);
-                    }
-                }
-            }
-            else if (_parent != -1)
-            {
-                try
-                {
-                    Console.WriteLine("Sending ping to parent:{0} ... " + DateTime.Now.ToString(), _parent);
-                    IServer backupServer = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(_parent));
-                    backupServer.AreYouAlive();
-                }
-                catch
-                {
-                    Console.WriteLine("Ping to parent:{0} failed ... " + DateTime.Now.ToString(), _parent);
-                    IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
-                    RemoveChild(_parent);
-                    mainServer.ReportDead(_parent);
+
+                    CheckServer(faultDetection.Key);
                 }
             }
             else
@@ -331,15 +336,55 @@ namespace Server
             }
         }
 
-        private void startHearthBeat()
+        private bool CheckServer(int serverUid)
+        {
+            try
+            {
+                Console.WriteLine("Sending ping to server:{0} ... " + DateTime.Now.ToString(), serverUid);
+                IServer backupServer = (IServer)Activator.GetObject(typeof(IServer), Config.GetServerUrl(serverUid));
+                backupServer.AreYouAlive();
+            }
+            catch
+            {
+                Console.WriteLine("Ping to server:{0} failed ... " + DateTime.Now.ToString(), serverUid);
+                IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
+
+                OnFaultDetectionDeath(serverUid);
+
+                mainServer.ReportDead(_serverId, serverUid);
+
+                return false;
+            }
+
+            return true;
+        }
+
+        private void StartHearthBeat()
         {
             _timerRunning = true;
             _timerReference = new Timer(new TimerCallback(TimerTask), this, _fiveSeconds, _fiveSeconds);
         }
 
-        private void stopHearthBeat()
+        private void StopHearthBeat()
         {
             _timerRunning = false;
+        }
+
+
+        public void RemoveFaultDetection(int uid)
+        {
+            if (_faultDetection.ContainsKey(uid))
+            {
+                _faultDetection.Remove(uid);
+                IMainServer mainServer = (IMainServer)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl);
+                mainServer.RemoveFaultDetection(_serverId, uid);
+            }
+        }
+
+
+        public void OnReborn(int faultDetection)
+        {
+            _faultDetection[faultDetection] = true;
         }
     }
 }

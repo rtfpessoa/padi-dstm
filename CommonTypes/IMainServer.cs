@@ -17,14 +17,14 @@ namespace CommonTypes
 
         ServerInit AddServer();
 
-        void RemoveServer(int serverId);
-
         Dictionary<int, RegistryEntry> ListServers();
 
         bool GetServerStatus();
 
         int GetVersion();
 
-        void ReportDead(int uid);
+        void ReportDead(int reporterId, int deadId);
+
+        void RemoveFaultDetection(int serverId, int failDetection);
     }
 }
