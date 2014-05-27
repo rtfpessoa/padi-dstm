@@ -1,9 +1,9 @@
 ﻿using System;
 using PADI_DSTM;
 
-class SampleApp
+internal class SampleApp
 {
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
         bool res = false;
         PadInt pi_a, pi_b;
@@ -79,7 +79,8 @@ class SampleApp
         {
             Console.WriteLine("Exception: " + e.Message);
             Console.WriteLine("####################################################################");
-            Console.WriteLine("AFTER r/w ABORT. Commit returned " + res + " . Press enter for abort and next transaction.");
+            Console.WriteLine("AFTER r/w ABORT. Commit returned " + res +
+                              " . Press enter for abort and next transaction.");
             Console.WriteLine("####################################################################");
             Console.ReadLine();
             PadiDstm.TxAbort();

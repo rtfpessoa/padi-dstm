@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using PADI_DSTM;
 
-class TenThousand
+internal class TenThousand
 {
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
-        bool res = false; int aborted = 0, committed = 0;
+        bool res = false;
+        int aborted = 0, committed = 0;
 
         PadiDstm.Init();
         try
@@ -31,13 +30,15 @@ class TenThousand
         {
             Console.WriteLine("Exception: " + e.Message);
             Console.WriteLine("####################################################################");
-            Console.WriteLine("AFTER create ABORT. Commit returned " + res + " . Press enter for abort and next transaction.");
+            Console.WriteLine("AFTER create ABORT. Commit returned " + res +
+                              " . Press enter for abort and next transaction.");
             Console.WriteLine("####################################################################");
             PadiDstm.TxAbort();
         }
         try
         {
-            int sum = 0; PadInt pi_a;
+            int sum = 0;
+            PadInt pi_a;
             res = PadiDstm.TxBegin();
             for (int i = 0; i < 9999; i++)
             {
@@ -60,7 +61,11 @@ class TenThousand
                 pi_a.Write(sum);
             }
             res = PadiDstm.TxCommit();
-            if (res) { committed++; Console.Write("."); }
+            if (res)
+            {
+                committed++;
+                Console.Write(".");
+            }
             else
             {
                 aborted++;
@@ -71,7 +76,8 @@ class TenThousand
         {
             Console.WriteLine("Exception: " + e.Message);
             Console.WriteLine("####################################################################");
-            Console.WriteLine("AFTER create ABORT. Commit returned " + res + " . Press enter for abort and next transaction.");
+            Console.WriteLine("AFTER create ABORT. Commit returned " + res +
+                              " . Press enter for abort and next transaction.");
             Console.WriteLine("####################################################################");
             PadiDstm.TxAbort();
             aborted++;
@@ -108,7 +114,8 @@ class TenThousand
         {
             Console.WriteLine("Exception: " + e.Message);
             Console.WriteLine("####################################################################");
-            Console.WriteLine("AFTER create ABORT. Commit returned " + res + " . Press enter for abort and next transaction.");
+            Console.WriteLine("AFTER create ABORT. Commit returned " + res +
+                              " . Press enter for abort and next transaction.");
             Console.WriteLine("####################################################################");
             Console.ReadLine();
             PadiDstm.TxAbort();

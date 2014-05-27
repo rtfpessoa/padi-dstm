@@ -13,9 +13,8 @@ namespace Server
 {
     internal class Server : MarshalByRefObject, IServer, IPartitipantProxy
     {
-        private const int _fiveSeconds = 10000;
+        private const int HeartbeatTime = 10000;
         private readonly Dictionary<int, bool> _faultDetection;
-        private readonly bool _hasChildren;
         private readonly int _parent;
 
         private readonly IParticipant _participant;
@@ -39,19 +38,6 @@ namespace Server
 
             _parent = serverInit.Parent;
             _faultDetection = serverInit.FaultDetection;
-
-            if (serverInit.FaultDetection.Count == 1 && serverInit.FaultDetection.ContainsKey(_parent))
-            {
-                _hasChildren = false;
-            }
-            else if (serverInit.FaultDetection.Count > 0)
-            {
-                _hasChildren = true;
-            }
-            else
-            {
-                _hasChildren = false;
-            }
         }
 
         public void DumpState()
@@ -71,9 +57,9 @@ namespace Server
 
         public bool Fail()
         {
-            /* Maybe contact master server? */
+            Environment.Exit(0);
 
-            throw new StackOverflowException();
+            return true;
         }
 
         public bool Freeze()
@@ -204,29 +190,29 @@ namespace Server
         public ParticipantStatus OnChild(int uid, int version, int serverCount)
         {
             WaitIfFrozen();
-            if (!_hasChildren && _parent != -1)
-            {
-                var parent = (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(_parent));
-                parent.RemoveFaultDetection(_serverId);
-            }
-            else if (_faultDetection.Count > 0)
+
+            if (_faultDetection.Count > 0 && _faultDetection.Keys.Max() < uid)
             {
                 foreach (int fd in _faultDetection.Keys)
                 {
-                    if (fd != uid)
+                    if (uid != fd)
                     {
                         var server = (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(fd));
                         server.RemoveFaultDetection(_serverId);
+
+                        var master = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl);
+                        master.RemoveFaultDetection(fd, _serverId);
                     }
                 }
             }
+            else if (_faultDetection.Count == 0 && _parent != -1)
+            {
+                var server = (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(_parent));
+                server.RemoveFaultDetection(_serverId);
 
-            return OnChildReborn(uid, version, serverCount);
-        }
-
-        public ParticipantStatus OnChildReborn(int uid, int version, int serverCount)
-        {
-            WaitIfFrozen();
+                var master = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl);
+                master.RemoveFaultDetection(_parent, _serverId);
+            }
 
             _faultDetection[uid] = true;
 
@@ -243,6 +229,16 @@ namespace Server
             if (_faultDetection.ContainsKey(deadId))
             {
                 _faultDetection[deadId] = false;
+            }
+        }
+
+        public void OnFaultDetectionReborn(int deadId)
+        {
+            WaitIfFrozen();
+
+            if (_faultDetection.ContainsKey(deadId))
+            {
+                _faultDetection[deadId] = true;
             }
         }
 
@@ -277,12 +273,6 @@ namespace Server
                 var mainServer = (IMainServer) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl);
                 mainServer.RemoveFaultDetection(_serverId, uid);
             }
-        }
-
-
-        public void OnReborn(int faultDetection)
-        {
-            _faultDetection[faultDetection] = true;
         }
 
         public void SetStatus(ParticipantStatus storage)
@@ -380,7 +370,7 @@ namespace Server
         private void StartHearthBeat()
         {
             _timerRunning = true;
-            _timerReference = new Timer(TimerTask, this, _fiveSeconds, _fiveSeconds);
+            _timerReference = new Timer(TimerTask, this, HeartbeatTime, HeartbeatTime);
         }
 
         private void StopHearthBeat()

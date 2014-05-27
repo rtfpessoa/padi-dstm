@@ -34,7 +34,7 @@ namespace PADI_DSTM
         public static bool Init()
         {
             IDictionary properties = new Hashtable();
-            properties["timeout"] = Config.NoInvocationTimeout;
+            properties["timeout"] = Config.InvocationTimeout;
             var channelServ = new TcpChannel(properties, null, null);
             ChannelServices.RegisterChannel(channelServ, false);
 
@@ -365,14 +365,21 @@ namespace PADI_DSTM
             return new PadInt(_currentTxInt, uid, server, _version);
         }
 
-        internal static int GetBackupServer(int uid)
+        private static int GetBackupServer(int uid)
         {
-            if (_serverList[uid].FaultDetection.Count > 0)
+            RegistryEntry serverEntry = _serverList[uid];
+
+            if (serverEntry.FaultDetection.Count > 0)
             {
-                return _serverList[uid].FaultDetection.Max();
+                return serverEntry.FaultDetection.Max();
             }
 
-            Console.WriteLine("We should never have two servers down!");
+            if (serverEntry.Parent != -1)
+            {
+                return serverEntry.Parent;
+            }
+
+            Console.WriteLine("We should never have a server without backup! Is it the first one?");
 
             return -1;
         }

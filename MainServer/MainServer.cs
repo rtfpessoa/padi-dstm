@@ -46,15 +46,15 @@ namespace MainServer
             {
                 int version = ++_version;
                 int parent = -1;
-                RegistryEntry entry;
                 var faultDetection = new Dictionary<int, bool>();
+                RegistryEntry entry;
 
                 if (_deadServers.Count > 0)
                 {
                     int serverId = _deadServers.Min();
-                    _registry[serverId].Active = true;
+                    entry = _registry[serverId];
+                    entry.Active = true;
 
-                    _registry.TryGetValue(serverId, out entry);
                     parent = entry.Parent;
 
                     foreach (int fd in entry.FaultDetection)
@@ -62,6 +62,7 @@ namespace MainServer
                         faultDetection.Add(fd, _registry[fd].Active);
                     }
 
+                    _deadServers.Remove(serverId);
 
                     return new ServerInit(serverId, version, parent, faultDetection, _registry.Count);
                 }
@@ -76,34 +77,25 @@ namespace MainServer
                     return new ServerInit(uid, version, parent, faultDetection, _registry.Count);
                 }
 
-                if (_registry.TryGetValue(uid, out entry))
-                {
-                    /* Enable the disabled child */
-                    _registry[uid].Active = true;
-                    parent = entry.Parent;
-                }
-                else
+                if (!_registry.TryGetValue(uid, out entry))
                 {
                     /* Create a child for each current server */
                     int serverUid = uid;
                     int registrySize = _registry.Count;
                     for (int i = 0; i < registrySize; i++)
                     {
-                        _registry.Add(serverUid, new RegistryEntry(i, (serverUid == uid)));
-
-                        if (serverUid == uid)
-                        {
-                            parent = i;
-                        }
-
+                        _registry.Add(serverUid, new RegistryEntry(i, false));
                         serverUid++;
                     }
                 }
 
-                _registry[parent].FaultDetection.Add(uid);
-                _registry[uid].FaultDetection.Add(parent);
-
+                entry = _registry[uid];
+                entry.Active = true;
+                parent = entry.Parent;
+                entry.FaultDetection.Add(parent);
                 faultDetection.Add(parent, _registry[parent].Active);
+
+                _registry[parent].FaultDetection.Add(uid);
 
                 return new ServerInit(uid, version, parent, faultDetection, _registry.Count);
             }
@@ -127,6 +119,7 @@ namespace MainServer
                 {
                     Console.WriteLine("Server {0} reported dead!", deadId);
                     _deadServers.Add(deadId);
+
                     RegistryEntry entry = _registry[deadId];
                     entry.Active = false;
 
@@ -140,6 +133,9 @@ namespace MainServer
                         }
                     }
 
+                    ForceServerDeath(deadId);
+
+                    /* Hack: ugly way to launch new server instance */
                     string currentDirectory = Directory.GetCurrentDirectory();
                     string serverReleaseDir = currentDirectory + "\\..\\..\\..\\Server\\bin\\Release";
                     string serverDebugDir = currentDirectory + "\\..\\..\\..\\Server\\bin\\Debug";
@@ -158,6 +154,19 @@ namespace MainServer
                         Process.Start(serverDebugDir + "\\" + serverExe);
                     }
                 }
+            }
+        }
+
+        private static void ForceServerDeath(int serverId)
+        {
+            try
+            {
+                var deadServer =
+                    (IServer) Activator.GetObject(typeof (IServer), Config.GetServerUrl(serverId));
+                deadServer.Fail();
+            }
+            catch
+            {
             }
         }
     }

@@ -1,9 +1,9 @@
-﻿using CommonTypes;
-using CommonTypes.Storage;
-using CommonTypes.Transactions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using CommonTypes;
+using CommonTypes.Storage;
+using CommonTypes.Transactions;
 
 namespace ServerLib.Transactions
 {
@@ -16,7 +16,7 @@ namespace ServerLib.Transactions
 
         public Participant(int serverId, IStorage storage)
         {
-            _coordinator = (ICoordinator)Activator.GetObject(typeof(ICoordinator), Config.RemoteMainserverUrl);
+            _coordinator = (ICoordinator) Activator.GetObject(typeof (ICoordinator), Config.RemoteMainserverUrl);
             _serverId = serverId;
             _status.storage = storage;
         }
@@ -46,12 +46,6 @@ namespace ServerLib.Transactions
                 }
 
                 throw new TxException();
-            }
-
-            IEnumerable<int> conflicts = WriteOtherReads(txid);
-            foreach (int conflict in conflicts)
-            {
-                // TODO: Abort transaction `conflict`
             }
         }
 
@@ -196,28 +190,6 @@ namespace ServerLib.Transactions
         }
 
         /*
-         * Checks if there are any changed PadInts between the transaction writes
-         *  and all the overlaping transactions reads that still active
-         */
-
-        private IEnumerable<int> WriteOtherReads(int txid)
-        {
-            HashSet<int> writes;
-            _status.txWriteSet.TryGetValue(txid, out writes);
-
-            var conflicts = new HashSet<int>();
-            foreach (var overlapTx in _status.txReadSet)
-            {
-                if (writes != null && (overlapTx.Key != txid && overlapTx.Value.Intersect(writes).Any()))
-                {
-                    conflicts.Add(overlapTx.Key);
-                }
-            }
-
-            return conflicts;
-        }
-
-        /*
          *  Removes all the traces of the transaction
          */
 
@@ -250,7 +222,7 @@ namespace ServerLib.Transactions
         private ICoordinator GetCoordinator()
         {
             return _coordinator ??
-                   (_coordinator = (ICoordinator)Activator.GetObject(typeof(IMainServer), Config.RemoteMainserverUrl));
+                   (_coordinator = (ICoordinator) Activator.GetObject(typeof (IMainServer), Config.RemoteMainserverUrl));
         }
     }
 }

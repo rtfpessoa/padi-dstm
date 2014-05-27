@@ -1,9 +1,9 @@
 ﻿using System;
 using PADI_DSTM;
 
-class CrossedLocks
+internal class CrossedLocks
 {
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
         bool res = false;
         PadInt pi_a, pi_b;
@@ -31,12 +31,12 @@ class CrossedLocks
             {
                 Console.WriteLine("Exception: " + e.Message);
                 Console.WriteLine("####################################################################");
-                Console.WriteLine("AFTER create ABORT. Commit returned " + res + " . Press enter for abort and next transaction.");
+                Console.WriteLine("AFTER create ABORT. Commit returned " + res +
+                                  " . Press enter for abort and next transaction.");
                 Console.WriteLine("####################################################################");
                 Console.ReadLine();
                 PadiDstm.TxAbort();
             }
-
         }
 
         try
@@ -86,7 +86,8 @@ class CrossedLocks
         {
             Console.WriteLine("Exception: " + e.Message);
             Console.WriteLine("####################################################################");
-            Console.WriteLine("AFTER r/w ABORT. Commit returned " + res + " . Press enter for abort and next transaction.");
+            Console.WriteLine("AFTER r/w ABORT. Commit returned " + res +
+                              " . Press enter for abort and next transaction.");
             Console.WriteLine("####################################################################");
             Console.ReadLine();
             PadiDstm.TxAbort();
@@ -118,6 +119,5 @@ class CrossedLocks
             Console.ReadLine();
             PadiDstm.TxAbort();
         }
-
     }
 }

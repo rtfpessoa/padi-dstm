@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using PADI_DSTM;
 
-class Cicle
+internal class Cicle
 {
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
-        bool res = false; int aborted = 0, committed = 0;
+        bool res = false;
+        int aborted = 0, committed = 0;
 
         PadiDstm.Init();
         try
@@ -33,7 +30,8 @@ class Cicle
         {
             Console.WriteLine("Exception: " + e.Message);
             Console.WriteLine("####################################################################");
-            Console.WriteLine("AFTER create ABORT. Commit returned " + res + " . Press enter for abort and next transaction.");
+            Console.WriteLine("AFTER create ABORT. Commit returned " + res +
+                              " . Press enter for abort and next transaction.");
             Console.WriteLine("####################################################################");
             Console.ReadLine();
             PadiDstm.TxAbort();
@@ -57,7 +55,11 @@ class Cicle
                 pi_f.Write(f);
                 Console.Write(".");
                 res = PadiDstm.TxCommit();
-                if (res) { committed++; Console.Write("."); }
+                if (res)
+                {
+                    committed++;
+                    Console.Write(".");
+                }
                 else
                 {
                     aborted++;
@@ -68,12 +70,12 @@ class Cicle
             {
                 Console.WriteLine("Exception: " + e.Message);
                 Console.WriteLine("####################################################################");
-                Console.WriteLine("AFTER create ABORT. Commit returned " + res + " . Press enter for abort and next transaction.");
+                Console.WriteLine("AFTER create ABORT. Commit returned " + res +
+                                  " . Press enter for abort and next transaction.");
                 Console.WriteLine("####################################################################");
                 PadiDstm.TxAbort();
                 aborted++;
             }
-
         }
         Console.WriteLine("####################################################################");
         Console.WriteLine("committed = " + committed + " ; aborted = " + aborted);
@@ -105,7 +107,8 @@ class Cicle
         {
             Console.WriteLine("Exception: " + e.Message);
             Console.WriteLine("####################################################################");
-            Console.WriteLine("AFTER create ABORT. Commit returned " + res + " . Press enter for abort and next transaction.");
+            Console.WriteLine("AFTER create ABORT. Commit returned " + res +
+                              " . Press enter for abort and next transaction.");
             Console.WriteLine("####################################################################");
             Console.ReadLine();
             PadiDstm.TxAbort();

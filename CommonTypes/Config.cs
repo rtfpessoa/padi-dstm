@@ -2,17 +2,16 @@
 {
     public static class Config
     {
-        public static readonly int InvocationTimeout = 5000;
-        public static readonly int NoInvocationTimeout = -1;
+        public const int InvocationTimeout = 5000;
 
-        public static readonly int RemoteMainserverPort = 9999;
-        public static readonly string RemoteMainserverObjName = "MainServer";
+        public const int RemoteMainserverPort = 9999;
+        public const string RemoteMainserverObjName = "MainServer";
+
+        private const int RemoteServerPortRange = 2000;
+        public const string RemoteServerObjName = "Server";
 
         public static readonly string RemoteMainserverUrl = "tcp://localhost:" + RemoteMainserverPort + "/" +
                                                             RemoteMainserverObjName;
-
-        public static readonly int RemoteServerPortRange = 2000;
-        public static readonly string RemoteServerObjName = "Server";
 
         public static string GetServerUrl(int uid)
         {
