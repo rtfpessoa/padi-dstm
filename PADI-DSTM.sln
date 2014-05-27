@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PADI-DSTM", "PADI-DSTM\PADI-DSTM.csproj", "{F183A75F-7AD4-4817-8E05-2D9151099208}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MainServer", "MainServer\MainServer.csproj", "{92012BD2-8C92-4B8B-BB27-C2555985F800}"
@@ -22,6 +20,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrossedLocks", "CrossedLocks\CrossedLocks.csproj", "{E00D32CE-B2FC-4810-AE3D-BC21AD264246}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleApp", "SampleApp\SampleApp.csproj", "{D1E905DD-63F3-4214-AA5D-E5AF061E7397}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "1000Objects", "1000Objects\1000Objects.csproj", "{BE25C33E-A5BE-4008-8CEE-6AFFD750343F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Freeze", "Freeze\Freeze.csproj", "{7A05A28F-B9D3-4F60-8DBC-772573ED09EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +71,14 @@ Global
 		{D1E905DD-63F3-4214-AA5D-E5AF061E7397}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1E905DD-63F3-4214-AA5D-E5AF061E7397}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1E905DD-63F3-4214-AA5D-E5AF061E7397}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE25C33E-A5BE-4008-8CEE-6AFFD750343F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE25C33E-A5BE-4008-8CEE-6AFFD750343F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE25C33E-A5BE-4008-8CEE-6AFFD750343F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE25C33E-A5BE-4008-8CEE-6AFFD750343F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A05A28F-B9D3-4F60-8DBC-772573ED09EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A05A28F-B9D3-4F60-8DBC-772573ED09EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A05A28F-B9D3-4F60-8DBC-772573ED09EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A05A28F-B9D3-4F60-8DBC-772573ED09EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
